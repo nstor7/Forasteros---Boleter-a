@@ -210,13 +210,17 @@ Todas se cargan también en Vercel (Settings → Environment Variables) antes de
 
 Estas tareas requieren tus credenciales y no las puedo hacer por ti:
 
-- [ ] Crear cuenta **PayPal Business** y sacar Client ID / Secret (sandbox y live)
-- [ ] Crear proyecto en **Supabase** y copiar URL + service role key
-- [ ] Crear cuenta en **Resend** (con dominio) o **Brevo** (sin dominio) y sacar la API key
-- [ ] Instalar GitHub CLI para automatizar el repo: `brew install gh && gh auth login` — o crear el repo a mano en github.com
+**Nunca necesito tus contraseñas.** Lo que se usa son llaves de API que tú generas y puedes revocar en cualquier momento sin tocar la cuenta.
+
+- [x] Cuenta PayPal: `nstor7@hotmail.com` — ya existe
+- [ ] **Verificar que la cuenta PayPal sea Business, no personal.** El checkout de invitado con tarjeta (comprar sin tener cuenta PayPal) solo funciona en Business. Se convierte gratis desde Ajustes.
+- [ ] Sacar Client ID + Secret en `developer.paypal.com` → Apps & Credentials → Create App (primero **sandbox**, luego **live**)
+- [ ] Crear proyecto en **Supabase**, correr `supabase/schema.sql`, copiar URL + service role key
+- [ ] Instalar GitHub CLI: `brew install gh && gh auth login` — o crear el repo a mano en github.com
 - [ ] Conectar el repo a **Vercel** desde vercel.com/new (primera vez, manual)
+- [ ] Comprar `forasterosdeltango.com`
+- [ ] *(Después del dominio)* Cuenta en **Resend** + verificar dominio → API key
 - [ ] *(Opcional pero recomendado)* Iniciar el trámite de **Yappy Comercial** en Banco General
-- [ ] *(Opcional)* Comprar un dominio, ej. `forasterosdeltango.com` — mejora la confianza al vender y habilita Resend
 
 ---
 
@@ -249,21 +253,38 @@ No puedo escribir al disco las imágenes que compartes en el chat. **Guarda los 
 
 Nota: la foto del parque tiene **cinco** integrantes y las otras dos tienen cuatro. Si la formación que toca el 2 de septiembre es una específica, conviene elegir la foto que la refleje para no confundir al público.
 
+### Resueltos
+
+- **No hay preventa** con precio distinto ni fecha límite. Un solo precio, $15, hasta agotar.
+- **Comisiones: decisión tomada.** PayPal queda como está. Tilopay cobraba menos porcentaje pero $1.50 fijo por transacción, que a $15 el boleto sale peor. No se optimiza más por este lado.
+
+### Dominio
+
+Verificado el 18 de agosto — **los cinco candidatos están libres**:
+
+```
+forasterosdeltango.com       LIBRE   ← recomendado
+losforasterosdeltango.com    LIBRE
+forasterosdeltango.net       LIBRE
+forasterostango.com          LIBRE
+forasterosdeltango.org       LIBRE
+```
+
+Mientras no exista el dominio, el sitio vive en `forasteros-boleteria.vercel.app` y funciona igual. Conectar el dominio después es un cambio de DNS, no de código.
+
+### Email — diferido a propósito
+
+El envío de boletos por correo depende del dominio, así que se construye después. Mientras tanto:
+
+- Los QR de tarjeta se muestran **en pantalla** al terminar el pago y quedan accesibles en `/orden/[id]` con un enlace permanente. El cliente puede guardarlo o tomarle captura.
+- Para las órdenes de Yappy aprobadas, el enlace `/orden/[id]` se le puede pasar por WhatsApp a mano hasta que el email esté activo.
+
+Sobre el alias: enviar desde un alias de Gmail funciona técnicamente, pero sin SPF/DKIM configurados en el dominio los correos con adjunto tienden a caer en spam — justo el peor escenario para un boleto. Cuando compres el dominio, verificarlo en Resend es más limpio y toma 15 minutos.
+
 ### Pendientes menores
 
-- Email remitente de los boletos (¿usamos `nstor777@gmail.com` o creas uno tipo `boletos@…`?)
 - Texto corto de presentación del grupo (2–3 frases para la landing)
-- ¿Hay preventa con precio distinto o fecha límite?
 - ¿Repertorio o artistas invitados que valga la pena anunciar?
-
-### Nota sobre comisiones
-
-A $15 el boleto, PayPal se lleva ~$0.96 por transacción de un solo boleto (4.4% + $0.30) — un **6.4% efectivo**, porque la tarifa fija pesa mucho en montos bajos. Dos maneras de suavizarlo:
-
-- **Empujar la compra múltiple.** Dos boletos en una sola orden pagan $1.62 en vez de $1.92, y cuatro pagan $2.94 en vez de $3.84. Un mensaje tipo "ven acompañado" en la landing ayuda.
-- **Yappy no tiene comisión.** Ponerlo como primera opción visual conviene económicamente, aunque el QR tarde en llegar. Si vendieras los 115 boletos todos por tarjeta individual, las comisiones serían ~$110; todo por Yappy, $0.
-
-Si se vende bien, la afiliación a una pasarela local (2–3%) se paga sola en el siguiente evento.
 
 ---
 
