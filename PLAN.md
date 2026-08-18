@@ -178,7 +178,7 @@ forasteros-boleteria/
 ```bash
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=          # secreto, solo servidor
+SUPABASE_SECRET_KEY=                # sb_secret_... — solo servidor, nunca al navegador
 
 # PayPal
 PAYPAL_CLIENT_ID=
