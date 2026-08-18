@@ -10,6 +10,22 @@
 
 ---
 
+## 0. Estado actual
+
+| Fase | Estado |
+|---|---|
+| 0 — Andamiaje y control de versiones | ✅ hecho en local · falta repo en GitHub y Vercel |
+| 1 — Landing page | ✅ hecha |
+| 2 — Base de datos y núcleo de boletos | ✅ hecho (esquema corriendo en Supabase, firma HMAC lista) |
+| 3 — Checkout con tarjeta | ⏳ bloqueado: faltan llaves de PayPal |
+| 4 — Flujo Yappy | ⏳ pendiente |
+| 5 — Escáner de puerta | ⏳ pendiente |
+| 6 — Lanzamiento | ⏳ pendiente |
+
+**Lo siguiente sin depender de nadie:** la página `/comprar`. Hoy el botón de la landing apunta ahí y da 404.
+
+---
+
 ## 1. Decisiones tomadas
 
 | Tema | Decisión |
