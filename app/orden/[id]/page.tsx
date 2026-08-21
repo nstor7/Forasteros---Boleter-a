@@ -202,7 +202,7 @@ function EsperandoTarjeta() {
           : "Todavía estamos activando el cobro con tarjeta. Mientras tanto puedes pagar por Yappy y recibir tus boletos igual."}
       </p>
       <Link
-        href="/comprar"
+        href="/boletos"
         className="mt-6 inline-block rounded-full bg-oro px-8 py-3 font-semibold text-noche transition hover:bg-oro-claro"
       >
         Volver a comprar
@@ -221,7 +221,7 @@ function Rechazada({ nota }: { nota: string | null }) {
         {nota ?? "No pudimos verificar el pago de esta orden."}
       </p>
       <Link
-        href="/comprar"
+        href="/boletos"
         className="mt-6 inline-block rounded-full border border-hueso-tenue/40 px-8 py-3 text-hueso transition hover:border-oro hover:text-oro"
       >
         Intentar de nuevo

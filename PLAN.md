@@ -17,7 +17,7 @@
 | 0 — Andamiaje y control de versiones | ✅ hecho en local · falta repo en GitHub y Vercel |
 | 1 — Landing page | ✅ hecha |
 | 2 — Base de datos y núcleo de boletos | ✅ hecho (esquema corriendo en Supabase, firma HMAC lista) |
-| 3 — Checkout con tarjeta | 🟡 hecho todo menos PayPal: `/comprar`, creación de órdenes y `/orden/[id]` funcionan. Falta enchufar la pasarela cuando lleguen las llaves. |
+| 3 — Checkout con tarjeta | 🟡 hecho todo menos PayPal: `/boletos`, creación de órdenes y `/orden/[id]` funcionan. Falta enchufar la pasarela cuando lleguen las llaves. |
 | 4 — Flujo Yappy | ✅ hecho: instrucciones de pago, subida de comprobante, panel de aprobación y correos |
 | 5 — Escáner de puerta | ✅ hecho: `/validar` con cámara, PIN, y búsqueda por código corto de respaldo |
 | 6 — Lanzamiento | ⏳ pendiente |
@@ -25,7 +25,7 @@
 ### Lo que bloquea ahora mismo
 
 1. **Correr `supabase/002_ordenes.sql`** en el SQL Editor de Supabase. Sin eso no se puede crear ninguna orden — la función `crear_orden` no existe todavía y `/api/orders` responde 500. Es lo único que impide vender por Yappy.
-2. **Llaves de PayPal** para activar el cobro con tarjeta. Mientras estén vacías, la opción "Tarjeta" aparece deshabilitada en `/comprar` y solo se vende por Yappy.
+2. **Llaves de PayPal** para activar el cobro con tarjeta. Mientras estén vacías, la opción "Tarjeta" aparece deshabilitada en `/boletos` y solo se vende por Yappy.
 3. **`RESEND_API_KEY`** para que salgan los correos. Sin ella los boletos igual se emiten y se ven en `/orden/[id]`; el envío solo queda registrado en los logs.
 4. **Repo en GitHub y proyecto en Vercel** (ambos requieren tus credenciales).
 
@@ -325,7 +325,7 @@ Cada fase es un bloque de trabajo que se le puede entregar a un modelo más bara
 1. Hero con `hero-arco.jpg`, nombre del grupo, "2 de septiembre · 7:00 PM · Rock and Folk"
 2. Sección de info: precio $15, dirección con enlace a Google Maps (`https://plus.codes/87F2XFRW+93V`), foto del grupo
 3. Contador de boletos disponibles (lee de la BD, sobre 115)
-4. CTA a `/comprar`
+4. CTA a `/boletos`
 5. Responsive — la mayoría va a comprar desde el celular
 6. **Verificable:** se ve bien en móvil y desktop
 
@@ -340,7 +340,7 @@ Cada fase es un bloque de trabajo que se le puede entregar a un modelo más bara
 4. **Verificable:** un script genera un QR válido y detecta uno falsificado
 
 ### Fase 3 — Checkout con tarjeta *(~5 h)*
-1. `/comprar` con formulario y validación
+1. `/boletos` con formulario y validación
 2. `POST /api/orders` crea la orden y chequea aforo
 3. PayPal Buttons en el cliente + `/api/paypal/create` en servidor
 4. `/api/webhooks/paypal` con **verificación de firma** (sin esto, cualquiera puede falsificar un pago)

@@ -19,8 +19,11 @@ const playfair = Playfair_Display({
 const descripcion = `${EVENTO.grupo} en vivo. ${EVENTO.fechaTexto}, ${EVENTO.horaTexto}, ${EVENTO.lugar}. Boletos ${precio(EVENTO.precioCents)}.`;
 
 export const metadata: Metadata = {
+  // `||` y no `??`: en Vercel la variable puede quedar como cadena vacía (no
+  // "sin definir") si se agrega antes de saber la URL final, y `??` no cae al
+  // valor por defecto en ese caso — `new URL("")` explota el build.
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
   ),
   title: {
     default: `${EVENTO.grupo} — ${EVENTO.titulo}`,

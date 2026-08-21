@@ -50,19 +50,37 @@ Verificado consultando Supabase y git, no de memoria.
 - Base de datos en Supabase con el esquema `supabase/schema.sql` corriendo.
 - `ticket_types` sembrado: Entrada General, $15.00, aforo 115.
 - Núcleo de boletos: firma HMAC, generación de QR, códigos cortos.
-- Páginas `/comprar`, `/orden/[id]`, `/admin`, `/validar` y sus APIs escritas,
-  con `npx next build` pasando limpio.
+- Páginas `/boletos` (antes `/comprar` — se renombró porque el banner ya
+  apunta ahí), `/orden/[id]`, `/admin`, `/validar` y sus APIs escritas, con
+  `npx next build` pasando limpio.
+- `/terminos` (T3 de la sección 6): política de reembolso, cómo se paga, qué
+  pasa con tus datos y contacto. Enlazada desde el pie de compra y el footer
+  de la landing.
+- Repo con remoto en GitHub (`git@github.com:nstor7/Forasteros---Boleter-a.git`),
+  working tree limpio al commit `b989dec`.
 
 ### No funciona todavía
-- **`supabase/002_ordenes.sql` NO se ha corrido.** La función `crear_orden` no
-  existe en la base de datos y el bucket `comprobantes` tampoco. Consecuencia:
-  `POST /api/orders` responde 500 y **no se puede vender nada**. Es tarea de
-  Nestor, no tuya — está en `TUS-TAREAS.md`.
-- `PAYPAL_*` vacías → la opción "Tarjeta" sale deshabilitada en `/comprar`.
+- **`supabase/002_ordenes.sql` sigue SIN correr**, confirmado dos veces con un
+  script de un solo uso contra Supabase (no de memoria, la última el 21 de
+  agosto): `crear_orden` y `expirar_ordenes_pendientes` no existen, el bucket
+  `comprobantes` tampoco. Consecuencia: `POST /api/orders` responde 500 y
+  **no se puede vender nada**. Nestor reportó un intento que falló con
+  `ERROR: 42601: syntax error at or near "cat"` — señal de que pegó el
+  *comando* de terminal (`cat ... | pbcopy`) directo en el SQL Editor, en vez
+  de copiar el contenido del archivo con ese comando y pegar el contenido. Es
+  tarea de Nestor, no tuya — está en `TUS-TAREAS.md`.
+- `PAYPAL_*` vacías → la opción "Tarjeta" sale deshabilitada en `/boletos`.
 - `RESEND_API_KEY` vacía → los correos no se envían, solo se registran en
   consola. Los boletos igual se emiten y se ven en `/orden/[id]`.
-- **Nada está commiteado** desde `a5a9bf7` y **no hay repo remoto ni Vercel**.
 - Hay 0 órdenes en la base de datos: nunca se ha probado una compra completa.
+- **Vercel falló en el primer deploy** con `TypeError: Invalid URL` en
+  `app/layout.tsx` porque `NEXT_PUBLIC_SITE_URL` llegó como cadena vacía (no
+  "sin definir") y `new URL(x ?? fallback)` no cae al fallback con `""`. Ya
+  está arreglado en el código (`||` en vez de `??`), verificado reproduciendo
+  el build con la variable vacía. **Pero el arreglo no está commiteado ni
+  pusheado** — Vercel va a seguir fallando hasta que Nestor pida commitear y
+  subir este cambio (regla 2.4: no hago `git commit`/`git push` sin que lo
+  pida).
 
 ---
 
@@ -90,7 +108,7 @@ lib/email.ts      Tres plantillas vía Resend. Sin llave: registra en consola y 
 lib/auth.ts       Sesiones firmadas con HMAC. Roles "admin" y "puerta".
 
 app/page.tsx              Landing
-app/comprar/              Formulario de compra
+app/boletos/              Formulario de compra
 app/orden/[id]/           Estado de la orden: instrucciones Yappy, subida de comprobante, o los QR
 app/admin/                Panel: revisar comprobantes, aprobar (emite + envía) o rechazar
 app/validar/              Escáner de puerta con cámara + PIN
@@ -130,14 +148,23 @@ poder cambiar de pasarela sin tocar el checkout), más:
 falsificar un pago con un `curl` y sacar boletos gratis.
 **Hecho cuando:** una compra en sandbox termina con boletos emitidos.
 
-### T3 — Página de términos
-Política de reembolso y qué pasa si se cancela el evento. `/comprar` ya enlaza
-mentalmente a esto en su texto legal; falta la página.
+### T3 — Página de términos ✅ hecha
+`/terminos` con política de reembolso, cómo se paga y contacto. Enlazada
+desde `/boletos` y desde el footer de la landing.
 
 ### T4 — Limpieza previa al lanzamiento
-- Expirar órdenes `pending` viejas (hoy solo se ignoran por tiempo).
-- Revisar textos y ortografía de toda la interfaz.
-- Probar en un teléfono real, sobre todo `/validar` con la cámara.
+- [x] Expirar órdenes `pending` viejas: antes solo se ignoraban por tiempo en
+      el cálculo de disponibilidad, pero se quedaban como `pending` para
+      siempre en la tabla. Ahora `expirar_ordenes_pendientes()` (agregada al
+      final de `supabase/002_ordenes.sql`, que sigue sin correr) las marca
+      `expired`, y `/admin` la llama de paso al cargar la lista.
+- [x] Revisar textos y ortografía de toda la interfaz: se leyó cada página,
+      componente y ruta de API en busca de errores — no se encontró ninguno.
+      Sigue valiendo la pena que Nestor lo lea con ojos frescos antes de
+      lanzar, sobre todo el texto del grupo en `app/page.tsx` (es genérico,
+      ver tarea 9 de `TUS-TAREAS.md`).
+- [ ] Probar en un teléfono real, sobre todo `/validar` con la cámara. Esto
+      necesita un teléfono físico — no se puede verificar desde aquí.
 
 ---
 

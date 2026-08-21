@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -196,8 +197,11 @@ export default function FormularioCompra({
       </button>
 
       <p className="text-center text-xs text-hueso-tenue">
-        Al continuar aceptas que los boletos no son reembolsables, salvo
-        cancelación del evento.
+        Al continuar aceptas los{" "}
+        <Link href="/terminos" className="underline underline-offset-4 hover:text-oro">
+          términos y la política de reembolso
+        </Link>
+        : los boletos no son reembolsables, salvo cancelación del evento.
       </p>
     </form>
   );

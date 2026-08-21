@@ -44,7 +44,7 @@ export default function Home() {
           </div>
 
           <Link
-            href="/comprar"
+            href="/boletos"
             className="mt-10 inline-block rounded-full bg-oro px-10 py-4 text-base font-semibold text-noche transition hover:bg-oro-claro focus-visible:ring-2 focus-visible:ring-oro-claro focus-visible:ring-offset-2 focus-visible:ring-offset-noche focus-visible:outline-none"
           >
             Comprar boletos · {precio(EVENTO.precioCents)}
@@ -144,7 +144,7 @@ export default function Home() {
           </p>
 
           <Link
-            href="/comprar"
+            href="/boletos"
             className="mt-10 inline-block rounded-full bg-oro px-10 py-4 text-base font-semibold text-noche transition hover:bg-oro-claro focus-visible:ring-2 focus-visible:ring-oro-claro focus-visible:ring-offset-2 focus-visible:ring-offset-noche focus-visible:outline-none"
           >
             Comprar boletos
@@ -157,6 +157,12 @@ export default function Home() {
         <p className="mt-2">
           {EVENTO.fechaTexto} · {EVENTO.lugar} · Panamá
         </p>
+        <Link
+          href="/terminos"
+          className="mt-4 inline-block underline underline-offset-4 transition hover:text-oro"
+        >
+          Términos y política de reembolso
+        </Link>
       </footer>
     </main>
   );

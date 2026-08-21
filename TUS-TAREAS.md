@@ -28,6 +28,10 @@ error.
 **Cómo sabes que funcionó:** en el SQL Editor corre
 `select * from storage.buckets;` y debe aparecer una fila `comprobantes`.
 
+*(El archivo creció un poco desde la última vez: ahora también agrega una
+función para marcar como "expiradas" las órdenes de tarjeta abandonadas. Sigue
+siendo un solo paso — copiar, pegar, Run.)*
+
 ---
 
 ### [ ] 2. Guardar el trabajo en git *(2 minutos)*

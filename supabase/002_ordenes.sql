@@ -104,3 +104,22 @@ on conflict (id) do update
 set file_size_limit    = excluded.file_size_limit,
     allowed_mime_types = excluded.allowed_mime_types,
     public             = false;
+
+-- ---------------------------------------------------------------------------
+-- Expiración de órdenes abandonadas
+-- ---------------------------------------------------------------------------
+-- Un checkout de tarjeta sin terminar deja de contar para el aforo pasados 20
+-- minutos (ver `boletos_disponibles` arriba), pero la fila se queda como
+-- 'pending' en la tabla para siempre si nadie la toca. Esta función la marca
+-- 'expired' de una vez, para que el panel de admin y cualquier reporte
+-- reflejen la realidad. Se llama de paso desde el panel, no por cron: un
+-- evento de una sola noche no necesita esa infraestructura extra.
+create or replace function expirar_ordenes_pendientes()
+returns void
+language sql
+as $$
+  update orders
+  set status = 'expired'
+  where status = 'pending'
+    and created_at < now() - interval '20 minutes';
+$$;

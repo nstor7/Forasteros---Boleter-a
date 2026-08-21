@@ -28,6 +28,12 @@ export default async function AdminPage() {
     );
   }
 
+  // Antes de listar, limpiamos: una orden de tarjeta abandonada hace más de
+  // 20 minutos ya no cuenta para el aforo, pero sigue como "pending" en la
+  // tabla si nadie la toca. El panel es la única pantalla que necesita verla
+  // al día, así que la expiración se dispara aquí y no con un cron aparte.
+  await db.rpc("expirar_ordenes_pendientes");
+
   const { data } = await db
     .from("orders")
     .select("*")
