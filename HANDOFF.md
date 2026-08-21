@@ -76,11 +76,10 @@ Verificado consultando Supabase y git, no de memoria.
 - **Vercel falló en el primer deploy** con `TypeError: Invalid URL` en
   `app/layout.tsx` porque `NEXT_PUBLIC_SITE_URL` llegó como cadena vacía (no
   "sin definir") y `new URL(x ?? fallback)` no cae al fallback con `""`. Ya
-  está arreglado en el código (`||` en vez de `??`), verificado reproduciendo
-  el build con la variable vacía. **Pero el arreglo no está commiteado ni
-  pusheado** — Vercel va a seguir fallando hasta que Nestor pida commitear y
-  subir este cambio (regla 2.4: no hago `git commit`/`git push` sin que lo
-  pida).
+  está arreglado (`||` en vez de `??`), verificado reproduciendo el build con
+  la variable vacía, commiteado y pusheado a `origin/master`
+  (`31b5b5b corrección para vercel`). Si Vercel no reintenta el deploy solo,
+  hace falta darle "Redeploy" desde su dashboard.
 
 ---
 
