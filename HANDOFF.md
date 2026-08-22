@@ -41,79 +41,64 @@ boleto.
 
 ---
 
-## 3. Estado verificado al 21 de agosto de 2026 (noche)
+## 3. Estado verificado al 22 de agosto de 2026 (noche)
 
-Verificado consultando Supabase, Vercel (CLI) y git, no de memoria.
+Verificado consultando Supabase y Vercel (por HTTP/curl, sin CLI — no hay
+sesión de Vercel logueada en esta máquina) y git, no de memoria.
 
 ### Funciona
 - Landing (`app/page.tsx`), diseño y paleta propios, responsive.
-- Base de datos en Supabase con **schema.sql y 002_ordenes.sql corridos**:
-  `crear_orden`, `expirar_ordenes_pendientes` y el bucket `comprobantes` los
-  tres existen y se probaron con llamadas reales (no solo lectura de
-  metadatos).
+- Base de datos en Supabase con **schema.sql y 002_ordenes.sql corridos**.
 - `ticket_types` sembrado: Entrada General, $15.00, aforo 115.
 - Núcleo de boletos: firma HMAC, generación de QR, códigos cortos.
-- Páginas `/boletos` (antes `/comprar` — se renombró porque el banner ya
-  apunta ahí), `/orden/[id]`, `/admin`, `/validar` y sus APIs, con
-  `npx next build` pasando limpio.
-- `/terminos`: política de reembolso, cómo se paga, qué pasa con tus datos y
-  contacto. Enlazada desde `/boletos` y el footer de la landing.
-- **Flujo Yappy de punta a punta, probado de verdad el 21 de agosto** (orden
-  de prueba `FOR-35RJ`, borrada después de confirmar): crear orden → subir
-  comprobante → aprobar desde `/admin` (login real con `ADMIN_PASSWORD`) →
-  boleto pagado con QR visible en `/orden/[id]` → escaneado en `/validar` con
-  el código corto (login real con `SCANNER_PIN`) → **verde "ADELANTE"** la
-  primera vez, **rojo "YA ENTRÓ"** la segunda. T1 de la sección 6, cerrada.
-- Repo con remoto en GitHub (`git@github.com:nstor7/Forasteros---Boleter-a.git`).
-- **Deploy en producción funcionando**: https://forasteros-boleter-a.vercel.app/
-  responde 200 con el contenido correcto (`/`, `/boletos`, `/terminos`
-  probados con curl; `/comprar` da 404 como debe). El error de
-  `metadataBase`/`Invalid URL` y el de `Faltan NEXT_PUBLIC_SUPABASE_URL...`
-  (variables de entorno sin cargar en Vercel) ya están resueltos.
+- Páginas `/boletos`, `/orden/[id]`, `/admin`, `/validar`, `/terminos` y sus
+  APIs, con `npx next build` pasando limpio.
+- **Flujo Yappy de punta a punta**, probado el 21 de agosto (T1, cerrada).
+- **PayPal de punta a punta, en sandbox Y en live:**
+  - Sandbox probado el 22 de agosto con una cuenta de comprador de prueba:
+    orden → botón PayPal → login → captura → webhook con firma verificada →
+    orden `paid` → QR en `/orden/[id]` → **correo con los boletos recibido
+    de verdad** (Resend + dominio `forasterosdeltango.com` verificado).
+  - Live configurado el 22 de agosto: Nestor cargó credenciales live
+    (`PAYPAL_ENV=live`, Client ID/Secret live, `NEXT_PUBLIC_PAYPAL_CLIENT_ID`
+    live) y un webhook nuevo en Vercel, e hizo redeploy. Verificado desde
+    aquí que el servidor puede crear órdenes reales contra el PayPal live
+    (sin cobrar nada — solo se probó la creación de la orden, no una
+    captura). **Falta la primera compra real de punta a punta**, que Nestor
+    va a hacer el 23 de agosto con boletos de familiares.
+  - Todas las órdenes de prueba (sandbox y live) se crearon y se borraron de
+    Supabase el mismo día; la base queda en 0 órdenes.
+- Correo (`lib/email.ts` vía Resend) funcionando de verdad: dominio
+  verificado, `RESEND_API_KEY` y `EMAIL_FROM` puestos en Vercel.
+- Repo con remoto en GitHub, deploy en producción funcionando en
+  `https://forasteros-boleter-a.vercel.app/` y en el dominio propio
+  `https://www.forasterosdeltango.com/` (el mismo deployment).
 
-### No funciona todavía
-- **PayPal — código listo, falta configuración externa.** Se implementó
-  `lib/payments/paypal.ts` (fetch directo a la REST API, sin SDK nuevo),
-  `lib/payments/index.ts`, `app/api/paypal/create/route.ts`,
-  `app/api/webhooks/paypal/route.ts` (verifica la firma del webhook, es
-  obligatorio) y el botón en `/orden/[id]` (`components/BotonPaypal.tsx`,
-  carga el SDK de PayPal por `<script>`). `npx next build` y `eslint` pasan
-  limpio. Probado en el navegador: se creó una orden real de prueba, el botón
-  "Pagar con PayPal" renderizó con las credenciales sandbox de verdad y
-  llamó a `/api/paypal/create` sin error (orden de prueba borrada después).
-  **Falta antes de que funcione de punta a punta:**
-  - `PAYPAL_WEBHOOK_ID` sigue vacío en `.env.local`. Hay que crear un webhook
-    en developer.paypal.com (app sandbox) apuntando a
-    `https://<tu-dominio>/api/webhooks/paypal`, evento
-    `PAYMENT.CAPTURE.COMPLETED`, y copiar el Webhook ID.
-  - `NEXT_PUBLIC_PAYPAL_CLIENT_ID` ya se copió localmente desde
-    `PAYPAL_CLIENT_ID` (mismo valor, con el prefijo público) — falta
-    replicar las cuatro variables de PayPal en Vercel.
-  - Nunca se completó un checkout de sandbox de principio a fin (hace falta
-    una cuenta de comprador de prueba de PayPal, que este agente no tiene).
-  - **Hecho cuando:** una compra en sandbox termina con boletos emitidos y
-    llegando por correo.
-- `RESEND_API_KEY` ahora **sí tiene valor** en `.env.local` local (antes
-  estaba vacía) y `EMAIL_FROM` usa el dominio `forasterosdeltango.com`. El
-  código de envío (`lib/email.ts`) ya estaba conectado desde antes en los
-  tres puntos que importan: comprobante recibido, boletos emitidos, rechazo.
-  **No verificado si el dominio `forasterosdeltango.com` está verificado en
-  Resend** (sin eso, Resend rechaza el envío aunque la llave sea válida) ni
-  si `RESEND_API_KEY` y `EMAIL_FROM` ya están en Vercel — pregúntale a Nestor
-  antes de asumir cualquier cosa.
-- Hay 0 órdenes reales en la base (la de prueba de este agente se creó y se
-  borró el mismo día): nunca se ha probado una compra real de un comprador.
+### Ojo con esto
+- **`forasterosdeltango.com` (sin `www`) redirige (308) a
+  `www.forasterosdeltango.com`.** PayPal no sigue redirecciones al mandar
+  webhooks — la URL del webhook en PayPal *tiene* que llevar el `www.`, o
+  usar `forasteros-boleter-a.vercel.app` en su lugar. Ya está así configurado
+  para sandbox y para live; si alguna vez un webhook deja de llegar, revisar
+  esto primero.
+- El refresh automático de `/orden/[id]` tras pagar (`components/BotonPaypal.tsx`)
+  reintenta cada 3s hasta 45s — el primer intento (una sola vez a los 3s) no
+  alcanzaba porque el webhook a veces tarda más. Ver T5 en la sección 6:
+  falta aplicar la misma idea a la etapa *anterior* (mientras carga el botón
+  de PayPal).
+- Nunca se ha probado una compra real pagada de principio a fin (con dinero
+  de verdad). Eso pasa mañana.
 
-### Nota sobre cambio de computadora
-Nestor va a seguir trabajando desde otra Mac. **`.env.local` nunca viajó a
-git** (está en `.gitignore` a propósito, nunca se commiteó — confirmado con
-`git log --all -- .env.local`) — un `git pull` en la otra máquina **no trae
-las llaves**. Si el modelo que retoma ahí encuentra que `npm run dev` o
-`npx next build` fallan con "Faltan NEXT_PUBLIC_SUPABASE_URL o
-SUPABASE_SECRET_KEY", esa es la causa: falta que Nestor copie `.env.local` a
-mano (AirDrop entre sus propias Mac es lo más simple — nunca sugieras subirlo
-a ningún sitio). `.env.example` (sí está en git) trae los nombres de todas las
-variables sin valores, útil para saber qué copiar.
+### Nota sobre `.env.local`
+**Nunca viaja a git** (está en `.gitignore` a propósito, nunca se commiteó
+— confirmado con `git log --all -- .env.local`), así que un `git pull` en
+otra máquina no trae las llaves. En esta Mac ya está presente y completo
+(Supabase, PayPal live, Resend, todo). Si algún día se retoma desde una
+máquina nueva y `npm run dev` o `npx next build` fallan con "Faltan
+NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SECRET_KEY", esa es la causa — hay que
+copiar `.env.local` a mano desde una máquina que sí lo tenga (AirDrop entre
+las propias Mac de Nestor, nunca subirlo a ningún sitio). `.env.example`
+(sí está en git) trae los nombres de todas las variables sin valores.
 
 ---
 
@@ -169,17 +154,33 @@ Probada de punta a punta el 21 de agosto (ver sección 3): orden → comprobante
 → aprobación en `/admin` → QR → escaneo en `/validar` (verde y luego rojo en
 el segundo intento). Los datos de prueba se borraron de Supabase después.
 
-### T2 — Integrar PayPal ⏳ código hecho, falta configuración externa
-Ver detalle en la sección 3. El código (`lib/payments/`, las dos rutas de
-API y el botón en `/orden/[id]`) está escrito, compila y pasa lint; lo que
-falta es crear el webhook en el dashboard de PayPal (para tener
-`PAYPAL_WEBHOOK_ID`) y correr un checkout de sandbox completo con una cuenta
-de comprador de prueba.
+### T2 — Integrar PayPal ✅ hecha en sandbox, pendiente pasar a live
+Código en `lib/payments/`, las dos rutas de API y el botón en `/orden/[id]`
+(`components/BotonPaypal.tsx`). **Probado de punta a punta en sandbox el 22
+de agosto**: compra con tarjeta → botón de PayPal → login con cuenta de
+comprador de prueba → webhook confirmado (firma verificada) → orden `paid`
+→ QR visibles en `/orden/[id]` → correo con los boletos recibido de verdad.
+Datos de prueba borrados de Supabase después.
 
-**La verificación de firma no es opcional** (ya implementada en
-`verificarFirmaWebhook`, `lib/payments/paypal.ts`). Sin ella cualquiera
-puede falsificar un pago con un `curl` y sacar boletos gratis.
-**Hecho cuando:** una compra en sandbox termina con boletos emitidos.
+Un bug se encontró y arregló en el camino: el refresh de la página tras
+pagar solo se intentaba una vez a los 3 segundos; si el webhook tardaba más
+(pasaba seguido en sandbox), la página se quedaba colgada diciendo que se
+actualizaba sola sin hacerlo. Ahora reintenta cada 3s hasta 45s
+(`components/BotonPaypal.tsx`).
+
+**La verificación de firma no es opcional** (`verificarFirmaWebhook`,
+`lib/payments/paypal.ts`). Sin ella cualquiera puede falsificar un pago con
+un `curl` y sacar boletos gratis.
+
+**Nota sobre el dominio y el webhook:** `forasterosdeltango.com` redirige
+(308) a `www.forasterosdeltango.com`. PayPal no sigue redirecciones al
+mandar webhooks, así que la URL del webhook en PayPal tiene que llevar el
+`www.` (o usar directamente `forasteros-boleter-a.vercel.app`, que no tiene
+este problema).
+
+**Pendiente:** pasar de sandbox a live (Nestor lo pidió explícitamente el 22
+de agosto, así que ya no aplica la restricción de la sección 8 de esperar
+confirmación). Ver sección 3 para el detalle de qué credenciales cambian.
 
 ### T3 — Página de términos ✅ hecha
 `/terminos` con política de reembolso, cómo se paga y contacto. Enlazada
@@ -198,6 +199,34 @@ desde `/boletos` y desde el footer de la landing.
       ver tarea 9 de `TUS-TAREAS.md`).
 - [ ] Probar en un teléfono real, sobre todo `/validar` con la cámara. Esto
       necesita un teléfono físico — no se puede verificar desde aquí.
+
+### T5 — Pendiente para el 23 de agosto (pedido por Nestor el 22 de agosto)
+
+1. **El mismo arreglo de reintento que se hizo para la confirmación del
+   pago, pero en la etapa anterior.** Cuando el comprador reserva y llega a
+   `/orden/[id]` a esperar que aparezca el botón de PayPal (mientras carga
+   el `<Script>` del SDK en `components/BotonPaypal.tsx`), Nestor tuvo que
+   recargar la página a mano porque el botón no apareció solo. Aplicar la
+   misma idea que ya existe para el estado "confirmando" (reintentar /
+   mostrar algo mientras carga, no dejar la pantalla muda) a este otro
+   momento — el spinner/estado antes de que `montarBotones()` termine de
+   renderizar los botones de PayPal.
+
+2. **Aclarar los textos de espera**, en las dos etapas de arriba. Nestor
+   dice que "esta página se actualiza sola" no se entiende bien. Cambiar por
+   algo más concreto sobre qué está pasando y qué va a recibir la persona,
+   por ejemplo (ajustar tono al resto del sitio):
+   - Mientras carga el botón de PayPal: algo como "En unos segundos podrás
+     pagar…".
+   - Mientras se confirma el pago: algo como "En unos segundos te
+     entregamos tu QR…".
+   La idea es que quien está esperando entienda *qué* está esperando, no
+   solo que "se actualiza sola".
+
+3. **Revisar y ajustar textos de la landing** (`app/page.tsx`), sobre todo
+   la sección genérica del grupo (ya señalada en T4 arriba y en la tarea 9
+   de `TUS-TAREAS.md`). Nestor va a traer cambios específicos — no inventar
+   copy nuevo sin que él lo pida primero.
 
 ---
 
@@ -223,5 +252,10 @@ directamente con un script de un solo uso y bórralo después.
 - No subas `.env.local` a git; ya está en `.gitignore`.
 - No cambies `TICKET_SECRET` después de emitir boletos: invalidaría todos los
   QR ya enviados.
-- No pases a PayPal `live` sin que Nestor lo pida explícitamente.
+- **PayPal ya está en `live`** (Nestor lo pidió el 22 de agosto). No lo
+  regreses a `sandbox` ni toques las credenciales live sin que él lo pida.
+- No borres órdenes que sean compras reales (dinero de verdad) — a partir de
+  mañana (23 de agosto) puede haber compras reales de familiares de Nestor
+  en la base. Antes de borrar una orden con un script de limpieza, confirma
+  que sea de prueba (revisa `buyer_email`, o pregúntale a Nestor).
 - No agregues dependencias pesadas. Hoy son seis y con eso alcanza.
