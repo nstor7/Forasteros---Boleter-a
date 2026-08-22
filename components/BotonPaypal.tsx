@@ -2,7 +2,7 @@
 
 import Script from "next/script";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Carga el SDK de PayPal por <script>, no por paquete npm — igual de
@@ -38,8 +38,31 @@ export default function BotonPaypal({
 }) {
   const router = useRouter();
   const contenedorId = "botones-paypal";
-  const [estado, setEstado] = useState<"listo" | "confirmando" | "error">("listo");
+  const [estado, setEstado] = useState<"listo" | "confirmando" | "tardando" | "error">("listo");
   const yaRenderizado = useRef(false);
+
+  // El webhook de PayPal no siempre llega en los primeros segundos.
+  // Reintentamos el refresh varias veces en vez de una sola: si la orden ya
+  // quedó "paid", el servidor devuelve los QR y este componente ni se monta
+  // de nuevo. Si se agotan los intentos, mostramos cómo seguir a mano —
+  // el pago ya se hizo, nunca hay que dejar al comprador sin su boleto.
+  useEffect(() => {
+    if (estado !== "confirmando") return;
+
+    let intentos = 0;
+    const MAX_INTENTOS = 15; // ~45s a 3s cada uno
+
+    const id = setInterval(() => {
+      intentos += 1;
+      router.refresh();
+      if (intentos >= MAX_INTENTOS) {
+        clearInterval(id);
+        setEstado("tardando");
+      }
+    }, 3000);
+
+    return () => clearInterval(id);
+  }, [estado, router]);
 
   function montarBotones() {
     if (yaRenderizado.current || !window.paypal) return;
@@ -62,10 +85,6 @@ export default function BotonPaypal({
           // Hay que capturar explícitamente: aprobar no cobra por sí solo.
           await actions.order.capture();
           setEstado("confirmando");
-          // El webhook confirma en nuestra base en cuanto PayPal lo manda,
-          // normalmente en segundos. Refrescamos la página del servidor
-          // para que muestre los QR apenas esté listo.
-          setTimeout(() => router.refresh(), 3000);
         },
         onError: (err) => {
           console.error("[paypal]", err);
@@ -80,6 +99,28 @@ export default function BotonPaypal({
       <p className="rounded-sm border border-oro/40 bg-oro/10 px-4 py-3 text-center text-sm text-oro-claro">
         Pago recibido, confirmando… esta página se actualiza sola.
       </p>
+    );
+  }
+
+  if (estado === "tardando") {
+    return (
+      <div className="space-y-3">
+        <p className="rounded-sm border border-oro/40 bg-oro/10 px-4 py-3 text-center text-sm text-oro-claro">
+          Tu pago se hizo, pero la confirmación está tardando más de lo
+          normal.
+        </p>
+        <button
+          type="button"
+          onClick={() => router.refresh()}
+          className="w-full rounded-full border border-piedra px-6 py-3 text-sm text-hueso transition hover:border-oro hover:text-oro"
+        >
+          Volver a revisar
+        </button>
+        <p className="text-center text-xs text-hueso-tenue">
+          Si sigue igual en unos minutos, escríbenos con tu código de orden —
+          el pago ya quedó registrado.
+        </p>
+      </div>
     );
   }
 
