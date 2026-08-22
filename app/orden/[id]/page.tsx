@@ -193,18 +193,23 @@ function EsperandoTarjeta({ orderId }: { orderId: string }) {
   const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
 
   if (!clientId) {
+    // No debería pasar en producción (si llegó hasta aquí con método
+    // "tarjeta" es porque /boletos ya vio la llave de PayPal activa), pero
+    // si pasa, no tiene sentido ofrecerle Yappy a mitad de una compra con
+    // tarjeta — es una salida distinta a la que eligió, y confunde más de
+    // lo que ayuda. Mejor ser honestos: algo falló, que empiece de nuevo.
     return (
       <div className="rounded-sm border border-piedra bg-noche-suave p-8 text-center">
-        <p className="font-display text-2xl text-oro">Pago con tarjeta en proceso</p>
+        <p className="font-display text-2xl text-oro">Hubo un problema con el pago</p>
         <p className="mt-4 leading-relaxed text-hueso-tenue">
-          Todavía estamos activando el cobro con tarjeta. Mientras tanto puedes
-          pagar por Yappy y recibir tus boletos igual.
+          No pudimos cargar el cobro con tarjeta para esta orden. Tu cupo
+          sigue apartado — intenta de nuevo.
         </p>
         <Link
           href="/boletos"
           className="mt-6 inline-block rounded-full bg-oro px-8 py-3 font-semibold text-noche transition hover:bg-oro-claro"
         >
-          Volver a comprar
+          Volver a intentar
         </Link>
       </div>
     );

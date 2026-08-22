@@ -210,20 +210,34 @@ desde `/boletos` y desde el footer de la landing.
 
 ### T5 — Pendiente para el 23 de agosto (pedido por Nestor el 22 de agosto)
 
-1. ✅ **Hecho el 22 de agosto.** `components/BotonPaypal.tsx` ahora arranca
-   en un estado `"cargando"` (antes arrancaba directo en `"listo"` con la
-   pantalla en blanco mientras el SDK cargaba). `montarBotones()` espera a
-   que `render()` resuelva de verdad antes de pasar a `"listo"`; si pasan 8s
-   sin que cargue, entra a `"carga_lenta"` con un botón para recargar la
-   página a mano — mismo espíritu que el reintento de `"confirmando"`.
-   Probado con el SDK real en vivo (no sandbox): arranca en el mensaje de
-   carga y a los ~2-3s aparece el botón real de PayPal. Orden de prueba
-   creada y borrada después.
+1. ✅ **Hecho el 22 de agosto, con una segunda vuelta tras feedback de
+   Nestor.** Primera versión: recuadro con texto + botón "Recargar" a los
+   8s. Nestor probó y dijo que el mensaje que sugería "paga por Yappy" a
+   alguien que ya había elegido tarjeta era confuso, y que en general quería
+   algo **más simple: solo una señal de espera, sin botones ni texto de
+   alternativas** — ni en la carga del botón ni en la confirmación del pago.
+   Quedó así:
+   - `"cargando"`: spinner + "Cargando la opción de pago…", sin recuadro ni
+     botón (componente `Esperando` en `components/BotonPaypal.tsx`).
+   - Pasados **20s** (subido de 8s — es un caso raro, no hace falta apurar
+     la salida) sin cargar, aparece un enlace de texto discreto para
+     recargar — la única salida que queda, para no dejar a alguien
+     genuinamente atascado esperando para siempre.
+   - `"confirmando"` (esperando el webhook tras pagar): mismo componente
+     `Esperando`, sin recuadro.
+   - El mensaje de `EsperandoTarjeta` en `app/orden/[id]/page.tsx` para
+     cuando falta `NEXT_PUBLIC_PAYPAL_CLIENT_ID` (caso raro en producción,
+     pero es justo lo que Nestor vio y reportó) ya no sugiere pagar por
+     Yappy — dice que hubo un problema y ofrece reintentar la compra.
+   - Probado con el SDK real en vivo (no sandbox, ni el caso normal ni el de
+     llave faltante) en esta Mac, arrancando un `next dev` aparte con la
+     variable inyectada por línea de comandos para no tocar `.env.local`
+     (que en esta Mac le falta `NEXT_PUBLIC_PAYPAL_CLIENT_ID`, ver más
+     abajo). Órdenes de prueba creadas y borradas después.
 
-2. ✅ **Hecho el 22 de agosto**, junto con el punto 1:
-   - Mientras carga el botón: "En unos segundos podrás pagar…"
-   - Mientras se confirma el pago: "Pago recibido. En unos segundos te
-     entregamos tu QR — no cierres esta página."
+2. ✅ **Hecho el 22 de agosto** (superado por el punto 1: los textos
+   quedaron más cortos que la propuesta original, sin la frase "esta página
+   se actualiza sola").
 
 3. **Revisar y ajustar textos de la landing** (`app/page.tsx`), sobre todo
    la sección genérica del grupo (ya señalada en T4 arriba y en la tarea 9
