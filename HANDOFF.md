@@ -72,15 +72,37 @@ Verificado consultando Supabase, Vercel (CLI) y git, no de memoria.
   (variables de entorno sin cargar en Vercel) ya están resueltos.
 
 ### No funciona todavía
-- `PAYPAL_*` vacías en `.env.local` local → la opción "Tarjeta" sale
-  deshabilitada en `/boletos`. **No verificado si Nestor ya las cargó en
-  Vercel** (el build no las necesita para pasar, así que un deploy exitoso no
-  lo confirma) — pregúntale antes de asumir cualquier cosa.
-- `RESEND_API_KEY` vacía (mismo caso: verificar en Vercel, no asumir) → los
-  correos no se envían, solo se registran en consola. Los boletos igual se
-  emiten y se ven en `/orden/[id]`.
-- Hay 0 órdenes reales en la base (la de prueba se creó y se borró el mismo
-  día, ver arriba): nunca se ha probado una compra real de un comprador.
+- **PayPal — código listo, falta configuración externa.** Se implementó
+  `lib/payments/paypal.ts` (fetch directo a la REST API, sin SDK nuevo),
+  `lib/payments/index.ts`, `app/api/paypal/create/route.ts`,
+  `app/api/webhooks/paypal/route.ts` (verifica la firma del webhook, es
+  obligatorio) y el botón en `/orden/[id]` (`components/BotonPaypal.tsx`,
+  carga el SDK de PayPal por `<script>`). `npx next build` y `eslint` pasan
+  limpio. Probado en el navegador: se creó una orden real de prueba, el botón
+  "Pagar con PayPal" renderizó con las credenciales sandbox de verdad y
+  llamó a `/api/paypal/create` sin error (orden de prueba borrada después).
+  **Falta antes de que funcione de punta a punta:**
+  - `PAYPAL_WEBHOOK_ID` sigue vacío en `.env.local`. Hay que crear un webhook
+    en developer.paypal.com (app sandbox) apuntando a
+    `https://<tu-dominio>/api/webhooks/paypal`, evento
+    `PAYMENT.CAPTURE.COMPLETED`, y copiar el Webhook ID.
+  - `NEXT_PUBLIC_PAYPAL_CLIENT_ID` ya se copió localmente desde
+    `PAYPAL_CLIENT_ID` (mismo valor, con el prefijo público) — falta
+    replicar las cuatro variables de PayPal en Vercel.
+  - Nunca se completó un checkout de sandbox de principio a fin (hace falta
+    una cuenta de comprador de prueba de PayPal, que este agente no tiene).
+  - **Hecho cuando:** una compra en sandbox termina con boletos emitidos y
+    llegando por correo.
+- `RESEND_API_KEY` ahora **sí tiene valor** en `.env.local` local (antes
+  estaba vacía) y `EMAIL_FROM` usa el dominio `forasterosdeltango.com`. El
+  código de envío (`lib/email.ts`) ya estaba conectado desde antes en los
+  tres puntos que importan: comprobante recibido, boletos emitidos, rechazo.
+  **No verificado si el dominio `forasterosdeltango.com` está verificado en
+  Resend** (sin eso, Resend rechaza el envío aunque la llave sea válida) ni
+  si `RESEND_API_KEY` y `EMAIL_FROM` ya están en Vercel — pregúntale a Nestor
+  antes de asumir cualquier cosa.
+- Hay 0 órdenes reales en la base (la de prueba de este agente se creó y se
+  borró el mismo día): nunca se ha probado una compra real de un comprador.
 
 ### Nota sobre cambio de computadora
 Nestor va a seguir trabajando desde otra Mac. **`.env.local` nunca viajó a
@@ -147,16 +169,16 @@ Probada de punta a punta el 21 de agosto (ver sección 3): orden → comprobante
 → aprobación en `/admin` → QR → escaneo en `/validar` (verde y luego rojo en
 el segundo intento). Los datos de prueba se borraron de Supabase después.
 
-### T2 — Integrar PayPal *(bloqueada hasta que existan las llaves)*
-Crear `lib/payments/paypal.ts` y `lib/payments/index.ts` (interfaz común, para
-poder cambiar de pasarela sin tocar el checkout), más:
-- `app/api/paypal/create/route.ts` — crea la orden en PayPal
-- `app/api/webhooks/paypal/route.ts` — **verifica la firma del webhook** y
-  llama a `confirmarPago()`
-- Botones de PayPal en `/orden/[id]` cuando la orden está `pending`
+### T2 — Integrar PayPal ⏳ código hecho, falta configuración externa
+Ver detalle en la sección 3. El código (`lib/payments/`, las dos rutas de
+API y el botón en `/orden/[id]`) está escrito, compila y pasa lint; lo que
+falta es crear el webhook en el dashboard de PayPal (para tener
+`PAYPAL_WEBHOOK_ID`) y correr un checkout de sandbox completo con una cuenta
+de comprador de prueba.
 
-**La verificación de firma no es opcional.** Sin ella cualquiera puede
-falsificar un pago con un `curl` y sacar boletos gratis.
+**La verificación de firma no es opcional** (ya implementada en
+`verificarFirmaWebhook`, `lib/payments/paypal.ts`). Sin ella cualquiera
+puede falsificar un pago con un `curl` y sacar boletos gratis.
 **Hecho cuando:** una compra en sandbox termina con boletos emitidos.
 
 ### T3 — Página de términos ✅ hecha

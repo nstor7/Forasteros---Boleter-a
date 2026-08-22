@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import BotonPaypal from "@/components/BotonPaypal";
 import SubirComprobante from "@/components/SubirComprobante";
 import { EVENTO, precio } from "@/lib/event";
 import { obtenerOrden, ticketsDeOrden, totalOrden } from "@/lib/orders";
@@ -54,7 +55,7 @@ export default async function OrdenPage({
           <InstruccionesYappy orden={orden.short_code} total={totalOrden(orden)} id={orden.id} />
         ))}
 
-      {orden.status === "pending" && <EsperandoTarjeta />}
+      {orden.status === "pending" && <EsperandoTarjeta orderId={orden.id} />}
 
       {(orden.status === "rejected" || orden.status === "expired") && (
         <Rechazada nota={orden.admin_note} />
@@ -188,25 +189,35 @@ function ComprobanteRecibido() {
 
 /* --------------------------------------------------------------- Tarjeta */
 
-function EsperandoTarjeta() {
-  const activo = Boolean(process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID);
+function EsperandoTarjeta({ orderId }: { orderId: string }) {
+  const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+
+  if (!clientId) {
+    return (
+      <div className="rounded-sm border border-piedra bg-noche-suave p-8 text-center">
+        <p className="font-display text-2xl text-oro">Pago con tarjeta en proceso</p>
+        <p className="mt-4 leading-relaxed text-hueso-tenue">
+          Todavía estamos activando el cobro con tarjeta. Mientras tanto puedes
+          pagar por Yappy y recibir tus boletos igual.
+        </p>
+        <Link
+          href="/boletos"
+          className="mt-6 inline-block rounded-full bg-oro px-8 py-3 font-semibold text-noche transition hover:bg-oro-claro"
+        >
+          Volver a comprar
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-sm border border-piedra bg-noche-suave p-8 text-center">
-      <p className="font-display text-2xl text-oro">
-        {activo ? "Falta completar el pago" : "Pago con tarjeta en proceso"}
+      <p className="font-display text-2xl text-oro">Completa el pago</p>
+      <p className="mt-4 mb-6 leading-relaxed text-hueso-tenue">
+        Tu cupo está reservado. Paga con tarjeta o cuenta de PayPal para
+        recibir tus boletos al instante.
       </p>
-      <p className="mt-4 leading-relaxed text-hueso-tenue">
-        {activo
-          ? "Tu orden está reservada pero el pago no se completó. Vuelve a intentarlo desde la página de compra."
-          : "Todavía estamos activando el cobro con tarjeta. Mientras tanto puedes pagar por Yappy y recibir tus boletos igual."}
-      </p>
-      <Link
-        href="/boletos"
-        className="mt-6 inline-block rounded-full bg-oro px-8 py-3 font-semibold text-noche transition hover:bg-oro-claro"
-      >
-        Volver a comprar
-      </Link>
+      <BotonPaypal orderId={orderId} clientId={clientId} />
     </div>
   );
 }
