@@ -228,6 +228,32 @@ desde `/boletos` y desde el footer de la landing.
    de `TUS-TAREAS.md`). Nestor va a traer cambios específicos — no inventar
    copy nuevo sin que él lo pida primero.
 
+4. **Hacer que las respuestas a los correos lleguen a la bandeja real de
+   Nestor (Gmail), no solo agregar un `Reply-To`.** Se detectó el 22 de
+   agosto: los MX de `forasterosdeltango.com` apuntan a
+   `inbound-smtp.us-east-1.amazonaws.com` (la recepción de Resend), que
+   entrega a un webhook que no existe en este proyecto — un cliente que le
+   dé "Responder" a un correo (por ejemplo el de rechazo de Yappy,
+   `enviarRechazo` en `lib/email.ts`) no rebota, pero tampoco le llega a
+   nadie. Nestor prefiere esto a un `Reply-To` con una dirección de Gmail
+   genérica porque se ve menos profesional.
+
+   El dominio está en **Hostinger** (registrador y DNS — nameservers
+   `*.dns-parking.com`, confirmado con `whois` y `dig NS` el 22 de agosto).
+   Buscar en su hPanel algo como "Emails" → "Reenvío de correo" / "Email
+   Forwarding" para reenviar `boletos@forasterosdeltango.com` a la Gmail de
+   Nestor. Esto normalmente cambia el registro **MX** — está bien
+   reemplazar el de Resend, porque el envío (lo único que usamos) depende
+   de los registros SPF/DKIM, no del MX. **No tocar ni borrar los registros
+   TXT/CNAME que Resend agregó para poder enviar correo**, solo el MX. Si
+   Hostinger no ofrece reenvío gratis y solo mailbox de pago (Titan Email),
+   preguntarle a Nestor si vale la pena para una sola noche antes de
+   sugerirlo.
+
+   Nestor también mencionó, como posible mejora aparte y no urgente, agregar
+   un contacto de WhatsApp como canal más directo — no implementar sin que
+   lo pida explícitamente.
+
 ---
 
 ## 7. Cómo verificar tu trabajo
