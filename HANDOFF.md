@@ -82,23 +82,31 @@ sesión de Vercel logueada en esta máquina) y git, no de memoria.
   para sandbox y para live; si alguna vez un webhook deja de llegar, revisar
   esto primero.
 - El refresh automático de `/orden/[id]` tras pagar (`components/BotonPaypal.tsx`)
-  reintenta cada 3s hasta 45s — el primer intento (una sola vez a los 3s) no
-  alcanzaba porque el webhook a veces tarda más. Ver T5 en la sección 6:
-  falta aplicar la misma idea a la etapa *anterior* (mientras carga el botón
-  de PayPal).
+  reintenta cada 3s hasta 45s. ~~El primer intento (una sola vez a los 3s) no
+  alcanzaba~~ — arreglado, ver T5.1/T5.2 en la sección 6 (22 de agosto).
 - Nunca se ha probado una compra real pagada de principio a fin (con dinero
   de verdad). Eso pasa mañana.
 
 ### Nota sobre `.env.local`
 **Nunca viaja a git** (está en `.gitignore` a propósito, nunca se commiteó
 — confirmado con `git log --all -- .env.local`), así que un `git pull` en
-otra máquina no trae las llaves. En esta Mac ya está presente y completo
-(Supabase, PayPal live, Resend, todo). Si algún día se retoma desde una
-máquina nueva y `npm run dev` o `npx next build` fallan con "Faltan
-NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SECRET_KEY", esa es la causa — hay que
-copiar `.env.local` a mano desde una máquina que sí lo tenga (AirDrop entre
-las propias Mac de Nestor, nunca subirlo a ningún sitio). `.env.example`
-(sí está en git) trae los nombres de todas las variables sin valores.
+otra máquina no trae las llaves. `.env.example` (sí está en git) trae los
+nombres de todas las variables sin valores.
+
+**Esta Mac (la original) quedó con un `.env.local` incompleto tras el
+`git pull`**, confirmado el 22 de agosto de noche: `PAYPAL_CLIENT_ID`,
+`PAYPAL_CLIENT_SECRET` y `RESEND_API_KEY` sí tienen valor, pero
+**`NEXT_PUBLIC_PAYPAL_CLIENT_ID` y `PAYPAL_WEBHOOK_ID` están vacíos** (se ve
+al abrir `/boletos` con método tarjeta: sale "Aún no disponible" en vez del
+botón). No los llené yo — regla de no editar `.env.local`. Para probar el
+botón de PayPal localmente en esta Mac lo verifiqué corriendo un `next dev`
+aparte en otro puerto con la variable inyectada por línea de comandos (sin
+tocar el archivo), pero **Nestor debería copiar el valor de
+`PAYPAL_CLIENT_ID` también a `NEXT_PUBLIC_PAYPAL_CLIENT_ID`** en
+`.env.local` (son el mismo valor, ver tarea 6 de `TUS-TAREAS.md`) para que
+`/boletos` con tarjeta funcione en esta Mac sin trucos. `PAYPAL_WEBHOOK_ID`
+no hace falta localmente (los webhooks solo le llegan a la URL pública de
+Vercel), así que ese puede quedar vacío aquí.
 
 ---
 
@@ -202,26 +210,20 @@ desde `/boletos` y desde el footer de la landing.
 
 ### T5 — Pendiente para el 23 de agosto (pedido por Nestor el 22 de agosto)
 
-1. **El mismo arreglo de reintento que se hizo para la confirmación del
-   pago, pero en la etapa anterior.** Cuando el comprador reserva y llega a
-   `/orden/[id]` a esperar que aparezca el botón de PayPal (mientras carga
-   el `<Script>` del SDK en `components/BotonPaypal.tsx`), Nestor tuvo que
-   recargar la página a mano porque el botón no apareció solo. Aplicar la
-   misma idea que ya existe para el estado "confirmando" (reintentar /
-   mostrar algo mientras carga, no dejar la pantalla muda) a este otro
-   momento — el spinner/estado antes de que `montarBotones()` termine de
-   renderizar los botones de PayPal.
+1. ✅ **Hecho el 22 de agosto.** `components/BotonPaypal.tsx` ahora arranca
+   en un estado `"cargando"` (antes arrancaba directo en `"listo"` con la
+   pantalla en blanco mientras el SDK cargaba). `montarBotones()` espera a
+   que `render()` resuelva de verdad antes de pasar a `"listo"`; si pasan 8s
+   sin que cargue, entra a `"carga_lenta"` con un botón para recargar la
+   página a mano — mismo espíritu que el reintento de `"confirmando"`.
+   Probado con el SDK real en vivo (no sandbox): arranca en el mensaje de
+   carga y a los ~2-3s aparece el botón real de PayPal. Orden de prueba
+   creada y borrada después.
 
-2. **Aclarar los textos de espera**, en las dos etapas de arriba. Nestor
-   dice que "esta página se actualiza sola" no se entiende bien. Cambiar por
-   algo más concreto sobre qué está pasando y qué va a recibir la persona,
-   por ejemplo (ajustar tono al resto del sitio):
-   - Mientras carga el botón de PayPal: algo como "En unos segundos podrás
-     pagar…".
-   - Mientras se confirma el pago: algo como "En unos segundos te
-     entregamos tu QR…".
-   La idea es que quien está esperando entienda *qué* está esperando, no
-   solo que "se actualiza sola".
+2. ✅ **Hecho el 22 de agosto**, junto con el punto 1:
+   - Mientras carga el botón: "En unos segundos podrás pagar…"
+   - Mientras se confirma el pago: "Pago recibido. En unos segundos te
+     entregamos tu QR — no cierres esta página."
 
 3. **Revisar y ajustar textos de la landing** (`app/page.tsx`), sobre todo
    la sección genérica del grupo (ya señalada en T4 arriba y en la tarea 9
