@@ -120,6 +120,95 @@ export async function crearOrden(
   throw new ErrorDeOrden("error_bd", "No se pudo generar un código de orden.");
 }
 
+export type DatosVentaManual = {
+  nombre: string;
+  email: string;
+  telefono?: string;
+  cantidad: number;
+  nota?: string;
+};
+
+/**
+ * Boleto generado a mano desde `/admin`, para ventas que pasaron fuera de la
+ * plataforma (efectivo, o Yappy a otra persona del grupo que no sea Nestor).
+ * A diferencia de `crearOrden`, la orden nace directamente en `paid` — quien
+ * la usa ya cobró por su cuenta, esto solo reserva el cupo y emite el
+ * boleto. El aforo se revisa igual que cualquier otra orden, dentro de
+ * `crear_orden` con `p_manual = true`.
+ */
+export async function crearOrdenManual(
+  entrada: DatosVentaManual,
+  ticketTypeId: string,
+): Promise<Order> {
+  const nombre = entrada.nombre?.trim() ?? "";
+  const email = entrada.email?.trim().toLowerCase() ?? "";
+  const telefono = entrada.telefono?.trim() ?? "";
+  const cantidad = Number(entrada.cantidad);
+  const nota = entrada.nota?.trim() || "Boleto generado manualmente desde el panel";
+
+  if (nombre.length < 2 || nombre.length > 120) {
+    throw new ErrorDeOrden("datos_invalidos", "Escribe el nombre completo.");
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || email.length > 200) {
+    throw new ErrorDeOrden("datos_invalidos", "Revisa el correo electrónico.");
+  }
+  if (!Number.isInteger(cantidad) || cantidad < 1 || cantidad > EVENTO.maxPorOrden) {
+    throw new ErrorDeOrden(
+      "datos_invalidos",
+      `Solo se pueden generar entre 1 y ${EVENTO.maxPorOrden} boletos por vez.`,
+    );
+  }
+
+  for (let intento = 0; intento < 5; intento++) {
+    const { data, error } = await db.rpc("crear_orden", {
+      p_tipo: ticketTypeId,
+      p_nombre: nombre,
+      p_email: email,
+      p_telefono: telefono,
+      p_cantidad: cantidad,
+      p_metodo: "manual",
+      p_short_code: nuevoCodigoCorto(),
+      p_manual: true,
+    });
+
+    if (!error) {
+      // `admin_note` no lo pone `crear_orden` (ese campo es de uso general,
+      // no vale la pena pasarlo como parámetro para un solo caso); se
+      // completa aquí en un segundo paso.
+      const { data: actualizada, error: errorNota } = await db
+        .from("orders")
+        .update({ admin_note: nota })
+        .eq("id", (data as Order).id)
+        .select()
+        .single();
+
+      if (errorNota) throw new ErrorDeOrden("error_bd", errorNota.message);
+      return actualizada as Order;
+    }
+
+    if (error.message.includes("sin_cupo")) {
+      const quedan = Number(error.details ?? 0);
+      throw new ErrorDeOrden(
+        "sin_cupo",
+        quedan > 0
+          ? `Solo quedan ${quedan} boletos disponibles.`
+          : "Las entradas se agotaron.",
+        Number.isFinite(quedan) ? quedan : 0,
+      );
+    }
+
+    if (error.message.includes("tipo_no_encontrado")) {
+      throw new ErrorDeOrden("tipo_no_encontrado", "No hay boletos a la venta.");
+    }
+
+    if (error.message.includes("orders_short_code_key")) continue;
+
+    throw new ErrorDeOrden("error_bd", `No se pudo generar la orden: ${error.message}`);
+  }
+
+  throw new ErrorDeOrden("error_bd", "No se pudo generar un código de orden.");
+}
+
 export async function obtenerOrden(id: string): Promise<Order | null> {
   // Un id malformado haría que Postgres tire error de tipo uuid.
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null;

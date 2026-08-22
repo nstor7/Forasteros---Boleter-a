@@ -3,9 +3,9 @@
 import { revalidatePath } from "next/cache";
 
 import { claveCorrecta, cerrarSesion, haySesion, iniciarSesion } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { db, tipoBoletoActivo } from "@/lib/db";
 import { enviarBoletos, enviarRechazo } from "@/lib/email";
-import { confirmarPago, obtenerOrden } from "@/lib/orders";
+import { ErrorDeOrden, confirmarPago, crearOrdenManual, emitirTickets, obtenerOrden } from "@/lib/orders";
 
 /**
  * Acciones del panel. Cada una revisa la sesión por su cuenta: una acción de
@@ -83,6 +83,46 @@ export async function rechazar(_estado: unknown, form: FormData) {
   revalidatePath("/admin");
 
   return { error: null, mensaje: `Orden ${orden.short_code} rechazada.` };
+}
+
+/**
+ * Genera boletos a mano para una venta que pasó fuera de la plataforma
+ * (efectivo, o Yappy a otra persona del grupo que no sea Nestor). La orden
+ * nace ya pagada — ver `crearOrdenManual` en lib/orders.ts.
+ */
+export async function generarEntrada(_estado: unknown, form: FormData) {
+  await exigirAdmin();
+
+  const cantidad = Number(form.get("cantidad") ?? 1);
+
+  try {
+    const tipo = await tipoBoletoActivo();
+    const orden = await crearOrdenManual(
+      {
+        nombre: String(form.get("nombre") ?? ""),
+        email: String(form.get("email") ?? ""),
+        telefono: form.get("telefono") ? String(form.get("telefono")) : "",
+        cantidad,
+        nota: String(form.get("nota") ?? ""),
+      },
+      tipo.id,
+    );
+
+    const tickets = await emitirTickets(orden);
+    const correo = await enviarBoletos(orden, tickets);
+    revalidatePath("/admin");
+
+    return {
+      error: null,
+      mensaje: correo.enviado
+        ? `Boletos generados y enviados a ${orden.buyer_email} (orden ${orden.short_code}).`
+        : `Boletos generados (orden ${orden.short_code}), pero el correo no salió (${correo.motivo}). Comparte el enlace de la orden a mano.`,
+    };
+  } catch (e) {
+    if (e instanceof ErrorDeOrden) return { error: e.message };
+    console.error("[admin] generarEntrada inesperado", e);
+    return { error: "No se pudo generar la orden." };
+  }
 }
 
 /**

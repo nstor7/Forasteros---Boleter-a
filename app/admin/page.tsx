@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { salir, urlComprobante } from "@/app/admin/actions";
 import AccionesOrden from "@/components/admin/AccionesOrden";
+import GenerarEntrada from "@/components/admin/GenerarEntrada";
 import LoginAdmin from "@/components/admin/LoginAdmin";
 import { haySesion } from "@/lib/auth";
 import { boletosDisponibles, db, tipoBoletoActivo, type Order } from "@/lib/db";
@@ -80,6 +81,8 @@ export default async function AdminPage() {
         />
       </div>
 
+      <GenerarEntrada />
+
       <Seccion
         titulo={`Por revisar (${porRevisar.length})`}
         vacio="Nada pendiente. Cuando alguien suba un comprobante de Yappy aparece aquí."
@@ -136,7 +139,11 @@ async function TarjetaOrden({
           </p>
           <p className="text-sm text-hueso-tenue">
             {orden.quantity} {orden.quantity === 1 ? "boleto" : "boletos"} ·{" "}
-            {orden.payment_method === "yappy" ? "Yappy" : "Tarjeta"}
+            {orden.payment_method === "yappy"
+              ? "Yappy"
+              : orden.payment_method === "manual"
+                ? "Manual"
+                : "Tarjeta"}
           </p>
           <p className="text-xs text-hueso-tenue">
             {new Date(orden.created_at).toLocaleString("es-PA", {
@@ -177,7 +184,14 @@ async function TarjetaOrden({
         </Link>
       )}
 
-      {orden.admin_note && orden.status !== "paid" && (
+      {/* Para "manual" la nota es información útil (cómo se cobró), no una
+          advertencia — se muestra en tono neutro y también cuando ya está
+          pagada. Para el resto (por ejemplo un rechazo), sigue siendo una
+          alerta y solo aparece si la orden no quedó pagada. */}
+      {orden.admin_note && orden.payment_method === "manual" && (
+        <p className="mt-3 text-sm text-hueso-tenue">Nota: {orden.admin_note}</p>
+      )}
+      {orden.admin_note && orden.payment_method !== "manual" && orden.status !== "paid" && (
         <p className="mt-3 text-sm text-acordeon">{orden.admin_note}</p>
       )}
     </article>

@@ -28,7 +28,9 @@ export type OrderStatus =
   | "rejected"
   | "expired";
 
-export type PaymentMethod = "card" | "yappy";
+// "manual" = boleto generado desde el panel de admin para una venta que pasó
+// fuera de la plataforma (efectivo, o Yappy a otra persona del grupo).
+export type PaymentMethod = "card" | "yappy" | "manual";
 
 export type TicketType = {
   id: string;

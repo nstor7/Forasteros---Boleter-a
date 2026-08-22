@@ -14,7 +14,30 @@ o `next build` va a fallar con "Faltan NEXT_PUBLIC_SUPABASE_URL...".
 
 ---
 
-## 🔴 Hoy mismo — sin esto no se puede vender nada
+## 🔴 Hoy mismo
+
+### [ ] 0. Correr la migración 003 en Supabase *(5 minutos)*
+
+Habilita el nuevo botón "Generar boletos a mano" en `/admin` — para venderle
+a amigos/familiares en efectivo o por Yappy a otra persona del grupo, sin
+pasar por PayPal. Sin esto el botón da error.
+
+1. Copia el archivo al portapapeles (esto va en la Terminal, no en Supabase):
+   ```bash
+   cat "supabase/003_ordenes_manuales.sql" | pbcopy
+   ```
+2. Entra a [supabase.com](https://supabase.com) → tu proyecto → **SQL Editor**
+   → **New query**
+3. Pega (ahí sí, en el SQL Editor) y dale **Run**
+4. Deberías ver "Success".
+
+**Cómo sabes que funcionó:** en `/admin`, abre "Generar boletos a mano",
+llena un boleto de prueba y dale enviar — debe crear la orden y mandarte el
+correo, en vez de dar un error de "no se encontró la función".
+
+---
+
+## 🟠 Ya hecho, para referencia
 
 ### [x] 1. Correr la migración 002 en Supabase *(5 minutos)* — hecho, verificado el 21 de agosto
 

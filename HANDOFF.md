@@ -142,8 +142,9 @@ app/api/orders/           POST crear orden
 app/api/yappy/proof/      POST subir comprobante
 app/api/validate/         POST validar QR o código corto
 
-supabase/schema.sql       Migración 001 — ya corrida
-supabase/002_ordenes.sql  Migración 002 — PENDIENTE de correr
+supabase/schema.sql             Migración 001 — ya corrida
+supabase/002_ordenes.sql        Migración 002 — ya corrida
+supabase/003_ordenes_manuales.sql  Migración 003 — PENDIENTE de correr
 ```
 
 **Invariantes que no se pueden romper:**
@@ -229,11 +230,16 @@ desde `/boletos` y desde el footer de la landing.
      cuando falta `NEXT_PUBLIC_PAYPAL_CLIENT_ID` (caso raro en producción,
      pero es justo lo que Nestor vio y reportó) ya no sugiere pagar por
      Yappy — dice que hubo un problema y ofrece reintentar la compra.
-   - Probado con el SDK real en vivo (no sandbox, ni el caso normal ni el de
-     llave faltante) en esta Mac, arrancando un `next dev` aparte con la
-     variable inyectada por línea de comandos para no tocar `.env.local`
-     (que en esta Mac le falta `NEXT_PUBLIC_PAYPAL_CLIENT_ID`, ver más
-     abajo). Órdenes de prueba creadas y borradas después.
+   - Probado en esta Mac (caso normal y el de llave faltante), arrancando un
+     `next dev` aparte con la variable inyectada por línea de comandos para
+     no tocar `.env.local`. **Corrección a lo que anoté antes:** dije que
+     esa prueba fue "con el SDK real en vivo, no sandbox" — es falso. Lo
+     confirmé el 22 de agosto de noche: el `PAYPAL_CLIENT_ID`/`SECRET` de
+     `.env.local` en esta Mac son credenciales de **sandbox** (`PAYPAL_ENV`
+     también dice `sandbox` ahí), no las live que se activaron en la otra
+     Mac — el `git pull` nunca las trajo. La prueba visual fue válida (el
+     spinner y el botón se comportan igual en ambos modos), pero no fue
+     "en vivo". La verificación real contra producción live está en T6.
 
 2. ✅ **Hecho el 22 de agosto** (superado por el punto 1: los textos
    quedaron más cortos que la propuesta original, sin la frase "esta página
@@ -269,6 +275,58 @@ desde `/boletos` y desde el footer de la landing.
    Nestor también mencionó, como posible mejora aparte y no urgente, agregar
    un contacto de WhatsApp como canal más directo — no implementar sin que
    lo pida explícitamente.
+
+### T6 — Investigación de una orden sin pagar + boletos manuales (22 de agosto, noche)
+
+**El caso:** Nestor vio en `/admin` una orden de "zhoe Reina", 2 boletos, $30,
+método tarjeta, sin confirmar. Investigado a fondo:
+- La orden nunca tuvo `paypal_order_id` (ese campo solo lo llena el
+  webhook al confirmar) → nuestro sistema nunca recibió confirmación de
+  pago para esa orden. Quedó `pending` los 20 minutos de rigor y después
+  `expired` automáticamente.
+- Confirmé que `/api/paypal/create` en producción sí crea órdenes reales
+  contra PayPal **live** (se lo probé con una orden propia y comprobé que el
+  id que devolvió PayPal *no* existe en el entorno sandbox — solo puede
+  existir en live).
+- Los logs de Vercel (`vercel logs`) solo conservan ~1 hora, así que no se
+  pudo ver el rastro original de esa compra (fue ~2h antes).
+- Las variables de PayPal en Vercel están marcadas **"Sensitive"** — ni con
+  `vercel env pull` se puede leer su valor real. Bien por seguridad, pero
+  limita lo que un modelo puede diagnosticar ahí sin ayuda de Nestor.
+- **Nestor revisó PayPal directamente: no hubo ningún cargo.** La clienta es
+  su amiga y le escribió para preguntarle qué pasó. Conclusión: no fue un
+  bug de cobro, simplemente no completó el pago (o cambió de opinión a
+  medio camino). Nada que reembolsar, nada roto en el cobro.
+
+**Lo que salió de esto — venta manual desde `/admin`:** Nestor va a vender
+boletos directo a amigos y familiares en efectivo, o por Yappy a otra
+persona del grupo (no a su número). Se construyó:
+- `supabase/003_ordenes_manuales.sql` — **PENDIENTE de correr** (mismo
+  procedimiento de siempre: copiar el contenido, pegar en el SQL Editor,
+  Run). Agrega `'manual'` como método de pago válido, y hace que
+  `crear_orden` acepte un nuevo parámetro opcional `p_manual` (con default
+  `false`, así que no rompe nada de lo que ya llama a esta función) que crea
+  la orden directamente en `paid` en vez de `pending`/`pending_review`. El
+  aforo se sigue revisando igual — un boleto vendido a mano ocupa un asiento
+  igual que cualquier otro.
+- `lib/orders.ts`: `crearOrdenManual()`.
+- `app/admin/actions.ts`: `generarEntrada()` (revisa sesión de admin,
+  valida, crea la orden ya pagada, emite boletos, manda el correo).
+- `components/admin/GenerarEntrada.tsx`: formulario plegable arriba de
+  "Por revisar" en `/admin` — nombre, correo, teléfono opcional, cantidad, y
+  una nota opcional para que Nestor recuerde cómo se cobró (efectivo, Yappy
+  a quién). Un botón: "Generar boletos".
+- `app/admin/page.tsx`: las tarjetas de orden ahora distinguen "Manual" de
+  "Yappy"/"Tarjeta", y muestran esa nota en tono neutro (no como advertencia
+  de rechazo, que es lo que significaba `admin_note` antes de esto).
+- **Probado hasta donde se pudo sin la migración:** login real, formulario
+  visible, envío llega hasta la llamada RPC y falla limpio con "no se
+  encontró la función" (exactamente lo esperado — confirma que todo el
+  cableado está bien, solo falta correr `003_ordenes_manuales.sql`). No
+  quedó ninguna orden a medias en la base (se confirmó con una consulta:
+  sigue habiendo solo 1 orden, la de zhoe Reina, sin tocar). **Falta probar
+  el flujo completo (generar → recibir correo → ver QR) después de que
+  corra la migración.**
 
 ---
 
