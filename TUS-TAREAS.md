@@ -7,11 +7,16 @@ septiembre).
 Marca con `[x]` lo que vayas terminando: el modelo que trabaje después lee este
 archivo para saber qué ya está listo.
 
+**Si sigues esto desde otra computadora:** `.env.local` no viaja con
+`git pull` (está en `.gitignore` a propósito). Cópialo a mano desde tu otra
+Mac (AirDrop es lo más simple) antes de correr `npm install` / `npm run dev`,
+o `next build` va a fallar con "Faltan NEXT_PUBLIC_SUPABASE_URL...".
+
 ---
 
 ## 🔴 Hoy mismo — sin esto no se puede vender nada
 
-### [ ] 1. Correr la migración 002 en Supabase *(5 minutos)*
+### [x] 1. Correr la migración 002 en Supabase *(5 minutos)* — hecho, verificado el 21 de agosto
 
 Es el tapón de todo. Sin esto, cualquier persona que intente comprar recibe un
 error.
@@ -34,7 +39,7 @@ siendo un solo paso — copiar, pegar, Run.)*
 
 ---
 
-### [ ] 2. Guardar el trabajo en git *(2 minutos)*
+### [x] 2. Guardar el trabajo en git *(2 minutos)* — hecho
 
 Hay 16 archivos sin guardar. Si algo se borra, se pierde una sesión entera de
 trabajo. Pídeselo al modelo ("commitea lo que hay") o hazlo tú:
@@ -47,7 +52,7 @@ git add -A && git commit -m "Checkout, flujo Yappy, panel de admin y escáner"
 
 ## 🟠 Esta semana — para poder lanzar
 
-### [ ] 3. Crear el repositorio en GitHub *(10 minutos)*
+### [x] 3. Crear el repositorio en GitHub *(10 minutos)* — hecho (`nstor7/Forasteros---Boleter-a`)
 
 Hoy el proyecto solo existe en tu Mac y no tiene copia remota.
 
@@ -69,16 +74,17 @@ público.
 
 ---
 
-### [ ] 4. Conectar Vercel *(10 minutos)*
+### [x] 4. Conectar Vercel *(10 minutos)* — hecho y verificado
 
-1. Entra a [vercel.com/new](https://vercel.com/new)
-2. Importa el repo `forasteros-boleteria`
-3. En **Environment Variables**, copia **todas** las variables de tu
-   `.env.local` (ábrelo con `open -a TextEdit .env.local`)
-4. Cambia `NEXT_PUBLIC_SITE_URL` por la URL que te dé Vercel
-5. Deploy
+Deploy en producción funcionando: https://forasteros-boleter-a.vercel.app/
+(`/`, `/boletos` y `/terminos` responden 200). Dos errores de build en el
+camino, ambos resueltos: `metadataBase`/`Invalid URL` (código arreglado) y
+variables de entorno de Supabase sin cargar en Vercel (Nestor las agregó).
 
-**Cómo sabes que funcionó:** la landing carga en tu URL `.vercel.app`.
+**Pendiente de confirmar:** si además cargaste `PAYPAL_*` y `RESEND_API_KEY`
+en Vercel (el build no los necesita para pasar, así que un deploy exitoso no
+lo prueba). Si no los pusiste, sigue el paso 3 original de esta tarea con
+esos dos grupos de variables cuando tengas las llaves.
 
 ---
 
@@ -169,6 +175,7 @@ falla en Rock and Folk, esa lista es tu plan B.
 |---|---|
 | Plan completo del proyecto | `PLAN.md` |
 | Instrucciones para el modelo | `HANDOFF.md` |
+| Sitio en producción | https://forasteros-boleter-a.vercel.app/ |
 | Panel de admin | `/admin` (contraseña en `.env.local`) |
 | Escáner de puerta | `/validar` (PIN en `.env.local`) |
 | Tus secretos | `.env.local` — nunca se sube a git |

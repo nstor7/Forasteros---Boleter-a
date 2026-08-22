@@ -41,45 +41,57 @@ boleto.
 
 ---
 
-## 3. Estado verificado al 21 de agosto de 2026
+## 3. Estado verificado al 21 de agosto de 2026 (noche)
 
-Verificado consultando Supabase y git, no de memoria.
+Verificado consultando Supabase, Vercel (CLI) y git, no de memoria.
 
 ### Funciona
 - Landing (`app/page.tsx`), diseño y paleta propios, responsive.
-- Base de datos en Supabase con el esquema `supabase/schema.sql` corriendo.
+- Base de datos en Supabase con **schema.sql y 002_ordenes.sql corridos**:
+  `crear_orden`, `expirar_ordenes_pendientes` y el bucket `comprobantes` los
+  tres existen y se probaron con llamadas reales (no solo lectura de
+  metadatos).
 - `ticket_types` sembrado: Entrada General, $15.00, aforo 115.
 - Núcleo de boletos: firma HMAC, generación de QR, códigos cortos.
 - Páginas `/boletos` (antes `/comprar` — se renombró porque el banner ya
-  apunta ahí), `/orden/[id]`, `/admin`, `/validar` y sus APIs escritas, con
+  apunta ahí), `/orden/[id]`, `/admin`, `/validar` y sus APIs, con
   `npx next build` pasando limpio.
-- `/terminos` (T3 de la sección 6): política de reembolso, cómo se paga, qué
-  pasa con tus datos y contacto. Enlazada desde el pie de compra y el footer
-  de la landing.
-- Repo con remoto en GitHub (`git@github.com:nstor7/Forasteros---Boleter-a.git`),
-  working tree limpio al commit `b989dec`.
+- `/terminos`: política de reembolso, cómo se paga, qué pasa con tus datos y
+  contacto. Enlazada desde `/boletos` y el footer de la landing.
+- **Flujo Yappy de punta a punta, probado de verdad el 21 de agosto** (orden
+  de prueba `FOR-35RJ`, borrada después de confirmar): crear orden → subir
+  comprobante → aprobar desde `/admin` (login real con `ADMIN_PASSWORD`) →
+  boleto pagado con QR visible en `/orden/[id]` → escaneado en `/validar` con
+  el código corto (login real con `SCANNER_PIN`) → **verde "ADELANTE"** la
+  primera vez, **rojo "YA ENTRÓ"** la segunda. T1 de la sección 6, cerrada.
+- Repo con remoto en GitHub (`git@github.com:nstor7/Forasteros---Boleter-a.git`).
+- **Deploy en producción funcionando**: https://forasteros-boleter-a.vercel.app/
+  responde 200 con el contenido correcto (`/`, `/boletos`, `/terminos`
+  probados con curl; `/comprar` da 404 como debe). El error de
+  `metadataBase`/`Invalid URL` y el de `Faltan NEXT_PUBLIC_SUPABASE_URL...`
+  (variables de entorno sin cargar en Vercel) ya están resueltos.
 
 ### No funciona todavía
-- **`supabase/002_ordenes.sql` sigue SIN correr**, confirmado dos veces con un
-  script de un solo uso contra Supabase (no de memoria, la última el 21 de
-  agosto): `crear_orden` y `expirar_ordenes_pendientes` no existen, el bucket
-  `comprobantes` tampoco. Consecuencia: `POST /api/orders` responde 500 y
-  **no se puede vender nada**. Nestor reportó un intento que falló con
-  `ERROR: 42601: syntax error at or near "cat"` — señal de que pegó el
-  *comando* de terminal (`cat ... | pbcopy`) directo en el SQL Editor, en vez
-  de copiar el contenido del archivo con ese comando y pegar el contenido. Es
-  tarea de Nestor, no tuya — está en `TUS-TAREAS.md`.
-- `PAYPAL_*` vacías → la opción "Tarjeta" sale deshabilitada en `/boletos`.
-- `RESEND_API_KEY` vacía → los correos no se envían, solo se registran en
-  consola. Los boletos igual se emiten y se ven en `/orden/[id]`.
-- Hay 0 órdenes en la base de datos: nunca se ha probado una compra completa.
-- **Vercel falló en el primer deploy** con `TypeError: Invalid URL` en
-  `app/layout.tsx` porque `NEXT_PUBLIC_SITE_URL` llegó como cadena vacía (no
-  "sin definir") y `new URL(x ?? fallback)` no cae al fallback con `""`. Ya
-  está arreglado (`||` en vez de `??`), verificado reproduciendo el build con
-  la variable vacía, commiteado y pusheado a `origin/master`
-  (`31b5b5b corrección para vercel`). Si Vercel no reintenta el deploy solo,
-  hace falta darle "Redeploy" desde su dashboard.
+- `PAYPAL_*` vacías en `.env.local` local → la opción "Tarjeta" sale
+  deshabilitada en `/boletos`. **No verificado si Nestor ya las cargó en
+  Vercel** (el build no las necesita para pasar, así que un deploy exitoso no
+  lo confirma) — pregúntale antes de asumir cualquier cosa.
+- `RESEND_API_KEY` vacía (mismo caso: verificar en Vercel, no asumir) → los
+  correos no se envían, solo se registran en consola. Los boletos igual se
+  emiten y se ven en `/orden/[id]`.
+- Hay 0 órdenes reales en la base (la de prueba se creó y se borró el mismo
+  día, ver arriba): nunca se ha probado una compra real de un comprador.
+
+### Nota sobre cambio de computadora
+Nestor va a seguir trabajando desde otra Mac. **`.env.local` nunca viajó a
+git** (está en `.gitignore` a propósito, nunca se commiteó — confirmado con
+`git log --all -- .env.local`) — un `git pull` en la otra máquina **no trae
+las llaves**. Si el modelo que retoma ahí encuentra que `npm run dev` o
+`npx next build` fallan con "Faltan NEXT_PUBLIC_SUPABASE_URL o
+SUPABASE_SECRET_KEY", esa es la causa: falta que Nestor copie `.env.local` a
+mano (AirDrop entre sus propias Mac es lo más simple — nunca sugieras subirlo
+a ningún sitio). `.env.example` (sí está en git) trae los nombres de todas las
+variables sin valores, útil para saber qué copiar.
 
 ---
 
@@ -130,10 +142,10 @@ supabase/002_ordenes.sql  Migración 002 — PENDIENTE de correr
 
 ## 6. Tareas pendientes, en orden
 
-### T1 — Verificar el flujo Yappy completo *(bloqueada hasta que corra la migración 002)*
-Crear una orden de prueba, subir un comprobante, aprobarla desde `/admin`, y
-confirmar que aparecen los QR en `/orden/[id]`.
-**Hecho cuando:** una orden pasa de creada a pagada con sus boletos visibles.
+### T1 — Verificar el flujo Yappy completo ✅ hecha
+Probada de punta a punta el 21 de agosto (ver sección 3): orden → comprobante
+→ aprobación en `/admin` → QR → escaneo en `/validar` (verde y luego rojo en
+el segundo intento). Los datos de prueba se borraron de Supabase después.
 
 ### T2 — Integrar PayPal *(bloqueada hasta que existan las llaves)*
 Crear `lib/payments/paypal.ts` y `lib/payments/index.ts` (interfaz común, para
