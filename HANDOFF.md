@@ -145,7 +145,7 @@ app/api/validate/         POST validar QR o código corto
 supabase/schema.sql                       Migración 001 — ya corrida
 supabase/002_ordenes.sql                  Migración 002 — ya corrida
 supabase/003_ordenes_manuales.sql         Migración 003 — ya corrida
-supabase/004_marketing_opt_in.sql         Migración 004 — PENDIENTE de correr
+supabase/004_marketing_opt_in.sql         Migración 004 — ya corrida
 supabase/005_fix_crear_orden_duplicado.sql  Migración 005 — ya corrida (urgente, ver T7)
 ```
 
@@ -391,12 +391,15 @@ chico) que la casilla vaya **pre-marcada** en el checkout público.
   cómo pedir que se les deje de escribir.
 - Solo toca el checkout público (`crearOrden`), no `crearOrdenManual` — las
   ventas manuales las hace Nestor hablando directo con la persona.
-- **Probado el 22 de agosto:** casilla marcada y desmarcada visualmente en
-  `/boletos`; con la migración 004 todavía sin correr, confirmé por curl y
-  por los logs del servidor que una compra con la casilla desmarcada crea la
-  orden igual (201) y solo deja un aviso en consola — no rompe la compra.
-  Falta probar el caso normal (columna ya creada) después de que corra la
-  migración.
+- ✅ **Migración 004 corrida y verificada el 22 de agosto de noche.** Antes
+  de darla por buena, y tras el susto de T7, confirmé primero que
+  `crear_orden` (el público, sin `p_manual`) seguía resolviendo sin
+  ambigüedad — esta migración solo agrega una columna, no debería haber
+  tocado la función, pero valía la pena confirmarlo. Después probé en
+  producción real: dos órdenes por `POST /api/orders`, una con
+  `aceptaNoticias: true` y otra con `false`, y consulté la base directo —
+  `marketing_opt_in` quedó `true` y `false` respectivamente, como
+  corresponde. Órdenes de prueba borradas después. **T8 cerrada.**
 
 ---
 

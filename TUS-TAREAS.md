@@ -25,25 +25,12 @@ Detalle completo en `HANDOFF.md`, sección T7.
 
 ---
 
-### [ ] 0.5 Correr la migración 004 en Supabase *(5 minutos)*
+### [x] 0.5 Correr la migración 004 en Supabase *(5 minutos)* — hecho, verificado el 22 de agosto
 
-Guarda si cada comprador quiere que le avises de futuros conciertos (la
-casilla pre-marcada que pediste en `/boletos`). Sin esto, la compra sigue
-funcionando igual — la casilla simplemente no se guarda todavía.
-
-1. Copia el archivo al portapapeles (esto va en la Terminal, no en Supabase):
-   ```bash
-   cat "supabase/004_marketing_opt_in.sql" | pbcopy
-   ```
-2. Entra a [supabase.com](https://supabase.com) → tu proyecto → **SQL Editor**
-   → **New query**
-3. Pega (ahí sí, en el SQL Editor) y dale **Run**
-4. Deberías ver "Success".
-
-**Cómo sabes que funcionó:** compra un boleto de prueba desmarcando la
-casilla, y en el SQL Editor corre
-`select buyer_name, marketing_opt_in from orders order by created_at desc limit 1;`
-— debe salir `false`.
+Guarda si cada comprador quiere que le avises de futuros conciertos. Probado
+en producción real: una orden con la casilla marcada y otra desmarcada,
+ambas quedaron guardadas correctamente (`true`/`false`) y se borraron
+después de confirmar.
 
 ---
 
