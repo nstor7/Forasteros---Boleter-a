@@ -6,9 +6,12 @@
 export const EVENTO = {
   grupo: "Los Forasteros del Tango",
   titulo: "Noche de Tango",
-  fecha: new Date("2026-09-02T19:00:00-05:00"),
+  fecha: new Date("2026-09-02T20:00:00-05:00"),
   fechaTexto: "Miércoles 2 de septiembre",
-  horaTexto: "7:00 PM",
+  horaTexto: "8:00 PM",
+  // Puertas abren una hora antes del concierto, para que la gente no espere
+  // parada afuera — se muestra en letra chica junto a horaTexto.
+  horaPuertasTexto: "7:00 PM",
   lugar: "Rock and Folk",
   direccion: "Calle Uruguay con C. 49 Este, Panamá",
   mapaUrl: "https://plus.codes/87F2XFRW+93V",

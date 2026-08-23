@@ -16,7 +16,7 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
-const descripcion = `${EVENTO.grupo} en vivo. ${EVENTO.fechaTexto}, ${EVENTO.horaTexto}, ${EVENTO.lugar}. Boletos ${precio(EVENTO.precioCents)}.`;
+const descripcion = `${EVENTO.grupo} en vivo. ${EVENTO.fechaTexto}, ${EVENTO.horaTexto} (puertas ${EVENTO.horaPuertasTexto}), ${EVENTO.lugar}. Boletos ${precio(EVENTO.precioCents)}.`;
 
 export const metadata: Metadata = {
   // `||` y no `??`: en Vercel la variable puede quedar como cadena vacía (no

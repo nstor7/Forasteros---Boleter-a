@@ -97,6 +97,9 @@ function Boletos({ qrs, orden }: { qrs: string[]; orden: string }) {
           <p className="mt-4 text-sm text-hueso-tenue">
             {EVENTO.fechaTexto} · {EVENTO.horaTexto} · {EVENTO.lugar}
           </p>
+          <p className="text-xs text-hueso-tenue/70">
+            Puertas abren {EVENTO.horaPuertasTexto}
+          </p>
         </div>
       ))}
 

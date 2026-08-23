@@ -74,7 +74,8 @@ const ENVOLTURA = (contenido: string) => `
     ${contenido}
     <p style="margin:32px 0 0;padding-top:16px;border-top:1px solid #2a211d;color:#c9bfb2;font-size:13px">
       ${EVENTO.fechaTexto} · ${EVENTO.horaTexto}<br>
-      ${EVENTO.lugar} — ${EVENTO.direccion}
+      ${EVENTO.lugar} — ${EVENTO.direccion}<br>
+      <span style="color:#8a8177;font-size:11px">Puertas abren ${EVENTO.horaPuertasTexto}</span>
     </p>
   </div>
 </div>`;

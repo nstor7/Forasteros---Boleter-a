@@ -12,9 +12,10 @@ siguiente tarea pendiente."
 ## 1. Qué es este proyecto
 
 Boletería web para un concierto único: **Los Forasteros del Tango**, el
-**2 de septiembre de 2026, 7:00 PM, en Rock and Folk (Panamá)**. Vende boletos
-a **$15** con aforo de **115 personas**, cobra por tarjeta y por Yappy, y
-entrega a cada comprador un **QR único** que se valida en la puerta.
+**2 de septiembre de 2026, 8:00 PM (puertas 7:00 PM), en Rock and Folk
+(Panamá)**. Vende boletos a **$15** con aforo de **115 personas**, cobra por
+tarjeta y por Yappy, y entrega a cada comprador un **QR único** que se valida
+en la puerta.
 
 Es un proyecto de una sola noche, no un producto. Cuando dudes entre robusto y
 simple, elige simple — pero nunca a costa de que alguien pague y no reciba su
@@ -415,6 +416,29 @@ no le muestra columna de revalidación a `/`).
 ("Quedan X boletos de 115", en `app/boletos/page.tsx`) sigue ahí — Nestor no
 lo mencionó y cumple un propósito distinto (urgencia al momento de comprar,
 no en la portada). No tocarlo sin que lo pida.
+
+### T10 — El concierto empieza a las 8:00 PM, puertas 7:00 PM (22 de agosto) ✅ hecha
+
+Nestor lo aclaró: el show es a las 8, pero las puertas abren a las 7 para
+que la gente no espere afuera. Cambios:
+
+- `lib/event.ts`: `horaTexto` pasó de "7:00 PM" a "8:00 PM"; `fecha` (el
+  `Date` real, usado en metadatos) también se movió a las 20:00. Se agregó
+  `horaPuertasTexto: "7:00 PM"` — nuevo campo, nunca existió antes.
+- En **todos** los lugares que muestran `horaTexto` se agregó una línea en
+  letra chica (`text-xs`, `text-hueso-tenue/70`) con "Puertas abren
+  {horaPuertasTexto}", justo debajo: landing (dos veces — portada y sección
+  "Cuándo"), `/boletos`, `/orden/[id]` (bajo cada QR), y el correo de
+  boletos (`lib/email.ts`, en un tono aún más apagado dentro del pie del
+  correo). También se ajustó la descripción de metadatos en `app/layout.tsx`
+  (lo que se ve al compartir el link) para incluir "(puertas 7:00 PM)".
+- `HANDOFF.md` sección 1 también actualizada; `PLAN.md` se dejó igual a
+  propósito — es un documento histórico del diseño original, no el estado
+  actual.
+- **Probado el 22 de agosto:** las 4 pantallas revisadas en el navegador
+  (portada, sección "Cuándo", `/boletos`, y el QR de una orden real generada
+  para la prueba — que además disparó el envío del correo con la plantilla
+  nueva, aceptado por Resend sin error). Orden de prueba borrada después.
 
 ---
 

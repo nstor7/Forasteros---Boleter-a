@@ -36,6 +36,9 @@ export default function Home() {
               {EVENTO.fechaTexto} · {EVENTO.horaTexto}
             </p>
             <p className="text-hueso-tenue">{EVENTO.lugar}</p>
+            <p className="text-xs text-hueso-tenue/70">
+              Puertas abren {EVENTO.horaPuertasTexto}
+            </p>
           </div>
 
           <Link
@@ -88,6 +91,9 @@ export default function Home() {
           <Dato titulo="Cuándo">
             <p className="text-hueso">{EVENTO.fechaTexto}</p>
             <p className="text-hueso-tenue">{EVENTO.horaTexto}</p>
+            <p className="text-xs text-hueso-tenue/70">
+              Puertas abren {EVENTO.horaPuertasTexto}
+            </p>
           </Dato>
 
           <Dato titulo="Dónde">

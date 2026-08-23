@@ -45,6 +45,9 @@ export default async function ComprarPage() {
         <p className="text-hueso-tenue">
           {EVENTO.fechaTexto} · {EVENTO.horaTexto} · {EVENTO.lugar}
         </p>
+        <p className="text-xs text-hueso-tenue/70">
+          Puertas abren {EVENTO.horaPuertasTexto}
+        </p>
         <p className="mt-1 text-hueso-tenue">
           {precio(EVENTO.precioCents)} por persona
         </p>
