@@ -19,6 +19,10 @@ export default function FormularioCompra({
 
   const [metodo, setMetodo] = useState<Metodo>(tarjetaActiva ? "card" : "yappy");
   const [cantidad, setCantidad] = useState(1);
+  // Nace marcada a propósito (decisión de Nestor): la mayoría de compradores
+  // no la va a tocar, y quien de verdad no quiere noticias sí se toma el
+  // trabajo de desmarcarla.
+  const [aceptaNoticias, setAceptaNoticias] = useState(true);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,6 +49,7 @@ export default function FormularioCompra({
           telefono: form.get("telefono"),
           cantidad,
           metodo,
+          aceptaNoticias,
         }),
       });
 
@@ -174,6 +179,16 @@ export default function FormularioCompra({
           />
         </div>
       </fieldset>
+
+      <label className="flex items-start gap-3 text-sm text-hueso-tenue">
+        <input
+          type="checkbox"
+          checked={aceptaNoticias}
+          onChange={(e) => setAceptaNoticias(e.target.checked)}
+          className="mt-0.5 h-4 w-4 shrink-0 accent-oro"
+        />
+        Avísenme por correo de futuros conciertos de {EVENTO.grupo}.
+      </label>
 
       {error && (
         <p

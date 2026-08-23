@@ -142,9 +142,11 @@ app/api/orders/           POST crear orden
 app/api/yappy/proof/      POST subir comprobante
 app/api/validate/         POST validar QR o código corto
 
-supabase/schema.sql             Migración 001 — ya corrida
-supabase/002_ordenes.sql        Migración 002 — ya corrida
-supabase/003_ordenes_manuales.sql  Migración 003 — PENDIENTE de correr
+supabase/schema.sql                       Migración 001 — ya corrida
+supabase/002_ordenes.sql                  Migración 002 — ya corrida
+supabase/003_ordenes_manuales.sql         Migración 003 — ya corrida
+supabase/004_marketing_opt_in.sql         Migración 004 — PENDIENTE de correr
+supabase/005_fix_crear_orden_duplicado.sql  Migración 005 — ya corrida (urgente, ver T7)
 ```
 
 **Invariantes que no se pueden romper:**
@@ -153,6 +155,12 @@ supabase/003_ordenes_manuales.sql  Migración 003 — PENDIENTE de correr
 - Marcar un boleto usado va con `is("used_at", null)`, para que dos escáneres
   simultáneos no dejen entrar dos veces.
 - El aforo se calcula en la función `crear_orden`, nunca en JavaScript.
+- **`create or replace function` con una firma de parámetros distinta NO
+  reemplaza la función en Postgres — crea una sobrecarga nueva.** Si algún
+  día hay que cambiarle los parámetros a `crear_orden` (o a cualquier otra
+  función RPC), hay que `drop function` de la versión vieja con su firma
+  exacta en la misma migración, o el checkout público se rompe en silencio
+  (ver T7 — pasó de verdad el 22 de agosto).
 
 ---
 
@@ -319,14 +327,76 @@ persona del grupo (no a su número). Se construyó:
 - `app/admin/page.tsx`: las tarjetas de orden ahora distinguen "Manual" de
   "Yappy"/"Tarjeta", y muestran esa nota en tono neutro (no como advertencia
   de rechazo, que es lo que significaba `admin_note` antes de esto).
-- **Probado hasta donde se pudo sin la migración:** login real, formulario
-  visible, envío llega hasta la llamada RPC y falla limpio con "no se
-  encontró la función" (exactamente lo esperado — confirma que todo el
-  cableado está bien, solo falta correr `003_ordenes_manuales.sql`). No
-  quedó ninguna orden a medias en la base (se confirmó con una consulta:
-  sigue habiendo solo 1 orden, la de zhoe Reina, sin tocar). **Falta probar
-  el flujo completo (generar → recibir correo → ver QR) después de que
-  corra la migración.**
+- ✅ **Migración corrida y flujo probado de punta a punta el 22 de agosto de
+  noche.** Login real en `/admin`, formulario, orden creada directo en
+  `paid`, aforo bajó de 115 a 114, correo enviado (confirmado por el mensaje
+  de éxito del panel), QR válido en `/orden/[id]`, y la tarjeta en el panel
+  mostró "Manual" con la nota en tono neutro. Orden de prueba borrada
+  después — en la base solo queda la orden real de zhoe Reina (`expired`,
+  sin tocar). **T6 cerrada.**
+
+### T7 — Incidente: la migración 003 rompió el checkout público *(22 de agosto, resuelto el mismo día)*
+
+Nestor preguntó por guardar correos/teléfonos para futuros conciertos.
+Mientras se construía la casilla de opt-in, una prueba de rutina en
+producción reveló algo mucho más grave: **desde que corrió la migración 003,
+nadie podía comprar boletos** (ni Yappy ni Tarjeta) — `POST /api/orders`
+daba 500 con `"No pudimos procesar tu compra"`.
+
+**Causa:** la migración 003 le agregó el parámetro `p_manual` a
+`crear_orden` con `create or replace function`. En Postgres eso no reemplaza
+una función si la firma de parámetros cambia — crea una **sobrecarga
+nueva**, así que quedaron dos versiones de `crear_orden` (7 y 8 parámetros)
+conviviendo en la base. El checkout público llama con los 7 originales, sin
+`p_manual`, y con las dos versiones presentes Postgres ya no podía decidir
+cuál usar.
+
+**Impacto real:** el modo de falla fue "no se puede comprar", no "se cobra
+sin dar boleto" — nadie perdió dinero. No quedó ninguna orden fantasma en la
+base (la función falla antes de insertar nada). No hay forma de saber cuánta
+gente intentó comprar y se encontró con el error durante esa ventana, porque
+un intento fallido no deja rastro en la base — solo en los logs de Vercel,
+que ya habían expirado quando se investigó.
+
+**Arreglo:** `supabase/005_fix_crear_orden_duplicado.sql` — `drop function`
+de la versión vieja de 7 parámetros, dejando solo la de 8 con `p_manual
+default false`. Corrida y verificada el mismo día: probé `POST
+/api/orders` en producción con Yappy y con Tarjeta (ambos 201, órdenes
+creadas y borradas después), y confirmé que la generación manual desde
+`/admin` seguía funcionando también.
+
+**Lección para cualquier migración futura que le cambie los parámetros a una
+función RPC existente:** hay que `drop function` de la firma vieja en la
+misma migración, no confiar en que `create or replace` la reemplaza. Ya
+quedó anotado como invariante en la sección 5.
+
+### T8 — Casilla de "avísenme de futuros conciertos" (22 de agosto)
+
+Nestor quiere poder reusar correos/teléfonos después del concierto para
+avisar de eventos futuros. Decidió (explícitamente, tras que le explicara el
+matiz legal — Ley 81 de 2019 de Panamá considera casillas pre-marcadas un
+consentimiento más débil, pero el riesgo es bajo para un evento así de
+chico) que la casilla vaya **pre-marcada** en el checkout público.
+
+- `supabase/004_marketing_opt_in.sql` — **PENDIENTE de correr.** Agrega
+  `marketing_opt_in boolean not null default true` a `orders`.
+- `components/FormularioCompra.tsx`: checkbox pre-marcado, "Avísenme por
+  correo de futuros conciertos de {grupo}".
+- `lib/orders.ts`: `crearOrden()` solo hace un `update` extra cuando la
+  persona la desmarca (el default de la columna ya cubre el caso común). Si
+  ese `update` falla — por ejemplo porque la migración 004 aún no corrió —
+  **la compra sigue adelante igual**, con un `console.error` nada más. Nunca
+  debe bloquear una venta por una preferencia de correo.
+- `app/terminos/page.tsx`: sección "Tus datos" ahora explica la casilla y
+  cómo pedir que se les deje de escribir.
+- Solo toca el checkout público (`crearOrden`), no `crearOrdenManual` — las
+  ventas manuales las hace Nestor hablando directo con la persona.
+- **Probado el 22 de agosto:** casilla marcada y desmarcada visualmente en
+  `/boletos`; con la migración 004 todavía sin correr, confirmé por curl y
+  por los logs del servidor que una compra con la casilla desmarcada crea la
+  orden igual (201) y solo deja un aviso en consola — no rompe la compra.
+  Falta probar el caso normal (columna ya creada) después de que corra la
+  migración.
 
 ---
 

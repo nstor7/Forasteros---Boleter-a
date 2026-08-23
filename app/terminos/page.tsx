@@ -68,10 +68,17 @@ export default function TerminosPage() {
 
         <Seccion titulo="Tus datos">
           <p>
-            Usamos tu nombre, correo y teléfono solo para gestionar tu orden y
+            Usamos tu nombre, correo y teléfono para gestionar tu orden y
             enviarte los boletos. Si pagas por Yappy, el comprobante que subes
             se guarda en un almacenamiento privado que solo puede ver la
             organización del evento — nunca es público.
+          </p>
+          <p>
+            Al comprar, la casilla para que te avisemos de futuros conciertos
+            de {EVENTO.grupo} viene marcada por defecto — puedes desmarcarla
+            antes de completar tu compra. Si en algún momento quieres que
+            dejemos de escribirte, respóndenos cualquier correo nuestro
+            pidiéndolo.
           </p>
         </Seccion>
 

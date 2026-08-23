@@ -16,7 +16,38 @@ o `next build` va a fallar con "Faltan NEXT_PUBLIC_SUPABASE_URL...".
 
 ## 🔴 Hoy mismo
 
-### [ ] 0. Correr la migración 003 en Supabase *(5 minutos)*
+### [x] 0. Correr la migración 005 en Supabase *(2 minutos, URGENTE — ya la corriste)*
+
+Esta arregló un incidente real: desde la migración 003, **nadie podía
+comprar boletos** (Yappy ni Tarjeta daban error). Ya está corrida y
+verificada en producción — la dejo aquí solo para que quede en el registro.
+Detalle completo en `HANDOFF.md`, sección T7.
+
+---
+
+### [ ] 0.5 Correr la migración 004 en Supabase *(5 minutos)*
+
+Guarda si cada comprador quiere que le avises de futuros conciertos (la
+casilla pre-marcada que pediste en `/boletos`). Sin esto, la compra sigue
+funcionando igual — la casilla simplemente no se guarda todavía.
+
+1. Copia el archivo al portapapeles (esto va en la Terminal, no en Supabase):
+   ```bash
+   cat "supabase/004_marketing_opt_in.sql" | pbcopy
+   ```
+2. Entra a [supabase.com](https://supabase.com) → tu proyecto → **SQL Editor**
+   → **New query**
+3. Pega (ahí sí, en el SQL Editor) y dale **Run**
+4. Deberías ver "Success".
+
+**Cómo sabes que funcionó:** compra un boleto de prueba desmarcando la
+casilla, y en el SQL Editor corre
+`select buyer_name, marketing_opt_in from orders order by created_at desc limit 1;`
+— debe salir `false`.
+
+---
+
+### [x] 1. Correr la migración 003 en Supabase *(5 minutos)* — hecho, verificado el 22 de agosto
 
 Habilita el nuevo botón "Generar boletos a mano" en `/admin` — para venderle
 a amigos/familiares en efectivo o por Yappy a otra persona del grupo, sin

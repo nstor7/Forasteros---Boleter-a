@@ -56,6 +56,9 @@ export type Order = {
   admin_note: string | null;
   reviewed_at: string | null;
   created_at: string;
+  // Si acepta que le escribamos sobre futuros conciertos. Nace en `true`
+  // porque la casilla en /boletos viene pre-marcada (decisión de Nestor).
+  marketing_opt_in: boolean;
 };
 
 export type Ticket = {

@@ -34,6 +34,10 @@ export type DatosCompra = {
   telefono?: string;
   cantidad: number;
   metodo: PaymentMethod;
+  // Casilla "avísenme de futuros conciertos" en /boletos, nace marcada.
+  // Opcional porque un `undefined` (petición vieja, o llamada manual) debe
+  // tratarse igual que "sí" — la columna en Supabase también nace en `true`.
+  aceptaNoticias?: boolean;
 };
 
 /** Validación mínima pero real; el navegador no es una fuente confiable. */
@@ -72,7 +76,14 @@ function validar(datos: DatosCompra): DatosCompra {
     );
   }
 
-  return { nombre, email, telefono, cantidad, metodo: datos.metodo };
+  return {
+    nombre,
+    email,
+    telefono,
+    cantidad,
+    metodo: datos.metodo,
+    aceptaNoticias: datos.aceptaNoticias !== false,
+  };
 }
 
 export async function crearOrden(
@@ -94,7 +105,33 @@ export async function crearOrden(
       p_short_code: nuevoCodigoCorto(),
     });
 
-    if (!error) return data as Order;
+    if (!error) {
+      const orden = data as Order;
+
+      // La columna nace en `true` (mismo default que la casilla en
+      // /boletos), así que solo hace falta un segundo `update` cuando la
+      // persona la desmarcó — evita una escritura extra en el caso común.
+      // Si falla (por ejemplo, la migración 004 todavía no corrió y la
+      // columna no existe), la orden ya se creó y el boleto ya se reservó:
+      // no vale la pena tirar toda la compra por una preferencia de correo.
+      // Queda registrada como si hubiera aceptado; se puede corregir a mano.
+      if (!datos.aceptaNoticias) {
+        const { data: actualizada, error: errorNoticias } = await db
+          .from("orders")
+          .update({ marketing_opt_in: false })
+          .eq("id", orden.id)
+          .select()
+          .single();
+
+        if (errorNoticias) {
+          console.error("[orders] no se pudo guardar marketing_opt_in", errorNoticias.message);
+          return orden;
+        }
+        return actualizada as Order;
+      }
+
+      return orden;
+    }
 
     if (error.message.includes("sin_cupo")) {
       const quedan = Number(error.details ?? 0);

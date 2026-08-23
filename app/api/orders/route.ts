@@ -30,6 +30,7 @@ export async function POST(request: Request) {
         telefono: datos.telefono ? String(datos.telefono) : "",
         cantidad: Number(datos.cantidad ?? 0),
         metodo: datos.metodo === "yappy" ? "yappy" : "card",
+        aceptaNoticias: datos.aceptaNoticias !== false,
       },
       tipo.id,
     );
