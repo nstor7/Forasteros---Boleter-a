@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 
+import MetaPixel from "@/components/MetaPixel";
 import { EVENTO, precio } from "@/lib/event";
 import "./globals.css";
 
@@ -50,9 +51,14 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+
   return (
     <html lang="es">
-      <body className={`${inter.variable} ${playfair.variable}`}>{children}</body>
+      <body className={`${inter.variable} ${playfair.variable}`}>
+        {children}
+        {pixelId && <MetaPixel pixelId={pixelId} />}
+      </body>
     </html>
   );
 }

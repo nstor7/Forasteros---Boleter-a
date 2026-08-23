@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import BotonPaypal from "@/components/BotonPaypal";
+import MetaPixelPurchase from "@/components/MetaPixelPurchase";
 import SubirComprobante from "@/components/SubirComprobante";
 import { EVENTO, precio } from "@/lib/event";
 import { obtenerOrden, ticketsDeOrden, totalOrden } from "@/lib/orders";
@@ -46,7 +47,16 @@ export default async function OrdenPage({
         </p>
       </header>
 
-      {orden.status === "paid" && <Boletos qrs={qrs} orden={orden.short_code} />}
+      {orden.status === "paid" && (
+        <>
+          <Boletos qrs={qrs} orden={orden.short_code} />
+          <MetaPixelPurchase
+            orderId={orden.id}
+            valor={orden.total_cents / 100}
+            cantidad={orden.quantity}
+          />
+        </>
+      )}
 
       {orden.status === "pending_review" &&
         (orden.proof_url ? (

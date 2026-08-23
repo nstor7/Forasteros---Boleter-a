@@ -61,6 +61,12 @@ export default function FormularioCompra({
         return;
       }
 
+      window.fbq?.("track", "InitiateCheckout", {
+        value: (EVENTO.precioCents * cantidad) / 100,
+        currency: "USD",
+        num_items: cantidad,
+      });
+
       router.push(datos.redirigirA);
     } catch {
       setError("No hay conexión. Revisa tu internet e intenta de nuevo.");
