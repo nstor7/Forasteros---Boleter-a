@@ -440,6 +440,56 @@ que la gente no espere afuera. Cambios:
   para la prueba — que además disparó el envío del correo con la plantilla
   nueva, aceptado por Resend sin error). Orden de prueba borrada después.
 
+### T11 — Meta Pixel (22 de agosto) — código listo, falta el ID real
+
+Nestor pidió agregar el Pixel de Meta. Revisé sus cuentas de Meta Ads
+conectadas: no había ningún Pixel para este proyecto, solo uno de otro
+negocio suyo (`nestoribarravisuals.com`, inactivo desde abril 2024) — no se
+reusa. Nestor va a crear uno nuevo en Meta Events Manager y pasar el ID.
+Decidió explícitamente: PageView + InitiateCheckout + Purchase (no solo
+PageView).
+
+- `components/MetaPixel.tsx`: script base + noscript fallback. Solo se
+  monta si existe `NEXT_PUBLIC_META_PIXEL_ID` (mismo patrón que el botón de
+  PayPal sin su llave). Como esta app navega del lado del cliente (App
+  Router), el PageView inicial lo manda el script base y los siguientes los
+  dispara este componente al detectar cambios de ruta (`usePathname`) — el
+  código base de Meta por sí solo asume recargas completas de página, y sin
+  esto los PageView de navegación interna no se contarían.
+- `components/FormularioCompra.tsx`: dispara `InitiateCheckout` (con
+  `value`, `currency`, `num_items`) justo después de crear la orden, antes
+  de redirigir a `/orden/[id]`.
+- `components/MetaPixelPurchase.tsx`, montado desde `app/orden/[id]/page.tsx`
+  cuando `status === "paid"`: dispara `Purchase` **una sola vez por orden**,
+  usando `localStorage` como seguro. Es necesario porque el comprador puede
+  volver a `/orden/[id]` cuando quiera a revisar su QR (así está pensado a
+  propósito) — sin el seguro, cada visita repetida inflaría el conteo de
+  compras.
+- `.env.example` y `.env.local` (esta Mac) ya tienen la línea
+  `NEXT_PUBLIC_META_PIXEL_ID=`, vacía. Falta agregarla también en Vercel
+  cuando Nestor tenga el ID (mismo paso ya conocido de otras llaves).
+- **Probado el 22 de agosto** con un ID de mentira (`0000000000000000`) en
+  un `next dev` aparte, sin tocar `.env.local`: confirmé por inspección del
+  DOM y espiando `window.fbq` que el script base carga e inyecta
+  `fbevents.js`, que `PageView` se repite al navegar del lado del cliente
+  (`/` → `/boletos`), que `InitiateCheckout` dispara con los valores
+  correctos al completar el formulario, y que el seguro de `localStorage`
+  para `Purchase` queda puesto en la primera visita a una orden pagada real
+  (no hizo falta crear una orden de prueba: mientras probaba esto, Nestor ya
+  tenía **ventas reales en curso** — ver nota abajo — así que usé una de
+  esas para el chequeo, sin modificarla, solo lectura).
+
+**Nota aparte, no planeada:** durante esta prueba encontré que **ya hay
+ventas reales** en la base: `FOR-VNF7` (Electra Castillo, manual, Yappy a
+Nestor) y `FOR-MGBH` (zhoe Reina, tarjeta — su segundo intento, el primero
+fue el que expiró sin cobrar el mismo día). El sitio está vendiendo boletos
+de verdad.
+
+**Pendiente:** el ID real del Pixel. En cuanto Nestor lo pase, agregarlo a
+`.env.local` y a Vercel (Production), redeploy, y verificar en el propio
+Meta Events Manager (pestaña "Test events") que los tres eventos lleguen
+desde el sitio real.
+
 ---
 
 ## 7. Cómo verificar tu trabajo
