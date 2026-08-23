@@ -1,12 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Suspense } from "react";
 
-import Disponibilidad from "@/components/Disponibilidad";
 import { EVENTO, precio } from "@/lib/event";
-
-// El contador de boletos tiene que reflejar ventas recientes, no el build.
-export const revalidate = 30;
 
 export default function Home() {
   return (
@@ -49,12 +44,6 @@ export default function Home() {
           >
             Comprar boletos · {precio(EVENTO.precioCents)}
           </Link>
-
-          <div className="mt-5 h-5">
-            <Suspense fallback={null}>
-              <Disponibilidad />
-            </Suspense>
-          </div>
         </div>
       </section>
 

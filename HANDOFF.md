@@ -401,6 +401,21 @@ chico) que la casilla vaya **pre-marcada** en el checkout público.
   `marketing_opt_in` quedó `true` y `false` respectivamente, como
   corresponde. Órdenes de prueba borradas después. **T8 cerrada.**
 
+### T9 — Quitar el contador de boletos vendidos de la landing (22 de agosto) ✅ hecha
+
+Nestor lo pidió: con pocas ventas, el contador ("Quedan X de 115") le
+restaba fuerza a la oferta en la portada. Se quitó `<Disponibilidad />` de
+`app/page.tsx` y se borró `components/Disponibilidad.tsx` (no se usaba en
+ningún otro lado — confirmado con `grep` antes de borrar). También se quitó
+`export const revalidate = 30`, que solo existía para que ese contador se
+refrescara; sin él la landing es 100% estática de nuevo (`npx next build` ya
+no le muestra columna de revalidación a `/`).
+
+**Ojo:** esto es solo la landing. El contador de `/boletos`
+("Quedan X boletos de 115", en `app/boletos/page.tsx`) sigue ahí — Nestor no
+lo mencionó y cumple un propósito distinto (urgencia al momento de comprar,
+no en la portada). No tocarlo sin que lo pida.
+
 ---
 
 ## 7. Cómo verificar tu trabajo
