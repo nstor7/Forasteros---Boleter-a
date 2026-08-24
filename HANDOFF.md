@@ -440,7 +440,7 @@ que la gente no espere afuera. Cambios:
   para la prueba — que además disparó el envío del correo con la plantilla
   nueva, aceptado por Resend sin error). Orden de prueba borrada después.
 
-### T11 — Meta Pixel (22 de agosto) — código listo, falta el ID real
+### T11 — Meta Pixel (22 de agosto, cerrada el 24) ✅ hecha
 
 Nestor pidió agregar el Pixel de Meta. Revisé sus cuentas de Meta Ads
 conectadas: no había ningún Pixel para este proyecto, solo uno de otro
@@ -465,9 +465,6 @@ PageView).
   volver a `/orden/[id]` cuando quiera a revisar su QR (así está pensado a
   propósito) — sin el seguro, cada visita repetida inflaría el conteo de
   compras.
-- `.env.example` y `.env.local` (esta Mac) ya tienen la línea
-  `NEXT_PUBLIC_META_PIXEL_ID=`, vacía. Falta agregarla también en Vercel
-  cuando Nestor tenga el ID (mismo paso ya conocido de otras llaves).
 - **Probado el 22 de agosto** con un ID de mentira (`0000000000000000`) en
   un `next dev` aparte, sin tocar `.env.local`: confirmé por inspección del
   DOM y espiando `window.fbq` que el script base carga e inyecta
@@ -485,10 +482,102 @@ Nestor) y `FOR-MGBH` (zhoe Reina, tarjeta — su segundo intento, el primero
 fue el que expiró sin cobrar el mismo día). El sitio está vendiendo boletos
 de verdad.
 
-**Pendiente:** el ID real del Pixel. En cuanto Nestor lo pase, agregarlo a
-`.env.local` y a Vercel (Production), redeploy, y verificar en el propio
-Meta Events Manager (pestaña "Test events") que los tres eventos lleguen
-desde el sitio real.
+**Cerrada el 24 de agosto:** Nestor creó el Pixel en Meta Events Manager y
+pasó el ID (`3038293726512844`). Con su confirmación explícita (preguntó
+"tú lo pegas en Vercel o debo hacerlo yo", eligió que lo hiciera yo), lo
+agregué con el CLI de Vercel ya conectado:
+`vercel env add NEXT_PUBLIC_META_PIXEL_ID production --value "..." --no-sensitive`
+(el flag `--no-sensitive` hizo falta: Vercel no deja marcar como "sensitive"
+una variable `NEXT_PUBLIC_*`, porque de todas formas termina visible en el
+bundle del navegador — tiene sentido, pero el mensaje de error no es obvio
+la primera vez). Redeploy con `vercel redeploy ... --target production`
+(hace falta: las `NEXT_PUBLIC_*` se hornean en el build, no se leen en
+caliente). Verificado en `www.forasterosdeltango.com`: el ID aparece en el
+HTML, `window.fbq` es una función, `fbevents.js` cargado, sin errores en
+consola. También se completó `.env.local` de esta Mac con el ID real (no es
+secreto — es el mismo valor que ya queda público en el bundle del
+navegador).
+
+**Sin verificar todavía:** que los eventos lleguen de verdad al otro lado
+(Meta Events Manager → pestaña "Test events" o "Eventos de prueba"). Eso
+solo lo puede confirmar Nestor desde su cuenta — pídeselo si hace falta
+cerrar el loop del todo.
+
+### T12 — Guardar de qué anuncio vino cada venta (UTMs) (23 de agosto) — pendiente
+
+**Contexto:** a partir del 23 de agosto se corre una campaña en Meta con varios
+videos distintos apuntando a `/boletos`. Sin esto sabremos cuántos boletos se
+vendieron, pero **no cuál video los vendió**. Con esto lo sabemos leyendo
+nuestra propia base de datos, sin depender de la atribución de Meta (que es
+menos confiable y se pierde si el Pixel de T11 falla).
+
+**Las instrucciones completas están en `UTM-TRACKING.md`, en la raíz del
+repo.** Es un documento autocontenido, paso a paso, con el SQL y el código
+listos. Léelo entero antes de empezar. Resumen de lo que toca:
+
+1. `supabase/006_utm_tracking.sql` — cuatro columnas nullable en `orders`
+   (`utm_source`, `utm_medium`, `utm_campaign`, `utm_content`) más un índice.
+2. `components/CapturarUTM.tsx` — captura los parámetros de la URL al llegar
+   y los guarda en `localStorage` (no `sessionStorage`: mucha gente ve el
+   anuncio, entra a mirar, y vuelve a comprar horas después).
+3. Montarlo en `app/layout.tsx` para que corra en todas las páginas — se
+   puede llegar directo a `/boletos` desde un anuncio.
+4. `components/FormularioCompra.tsx` lee lo guardado y lo manda con la compra.
+5. `lib/orders.ts` lo guarda en el `update` posterior a `crear_orden`.
+
+**⚠️ Lo más importante — no toques la firma de `crear_orden`.** Este repo ya
+se cayó una vez por eso (ver T7 y el invariante de la sección 5). La solución
+del documento usa el mismo patrón seguro que ya usa `marketing_opt_in`: crear
+la orden como siempre y después hacer un `update` sobre la fila. Es aburrido
+y es correcto. Mantenlo así.
+
+**El caso que no se puede romper:** una compra normal, entrando directo al
+sitio sin parámetros en la URL, tiene que seguir funcionando igual — las
+cuatro columnas quedan en `null` y la orden se crea sin problema.
+
+**Complementa a T11 (Pixel), no lo reemplaza.** El Pixel le sirve a Meta para
+optimizar; los UTMs nos sirven a nosotros para saber la verdad.
+
+### T13 — Ajustes de texto pedidos por Nestor el 23 de agosto — pendiente
+
+Estos son los cambios específicos que T5.3 estaba esperando ("Nestor va a
+traer cambios específicos"). Ya llegaron. Salen de armar la campaña de Meta,
+y cada uno tiene una razón concreta.
+
+**`app/page.tsx` — sección "El grupo":**
+
+- **Quitar** *"Una velada íntima, para 115 personas nada más"*. Nestor aportó
+  el dato de mercado: en Panamá el público de música en vivo está acostumbrado
+  a salas de 300 (Teatro Amador), 800 (Nacional) y 3000 (Anayansi). Contra
+  eso, "115 personas" no se lee como *íntimo* o *exclusivo* — se lee como
+  *evento menor*. El aforo chico solo sirve como urgencia al final, con número
+  real, y de eso ya se encarga el aviso de `/boletos`.
+- **Agregar** que el show tiene **bailarines** y **un cantante invitado**
+  (confirmado por Nestor; en singular, un solo cantante). Hoy la página solo
+  describe cinco músicos, y los anuncios de la campaña van a prometer un show
+  con baile y voces. Si la promesa del anuncio no coincide con lo que la
+  persona ve al aterrizar, se rompe justo en el momento de pagar.
+
+**`app/page.tsx` línea ~13** — el `alt` de la foto del hero dice "en el Casco
+Antiguo". Cambiarlo. El venue es **Calle Uruguay**, cerca del Casco pero no
+dentro, y en Panamá el Casco carga fricción real (filas para entrar, poco
+estacionamiento, robos). Es texto que solo leen Google y los lectores de
+pantalla, pero no cuesta nada dejarlo correcto.
+
+**`app/boletos/page.tsx` — encabezado, antes del formulario:**
+
+- **Agregar `EVENTO.direccion`** ("Calle Uruguay con C. 49 Este"). El dato ya
+  existe en `lib/event.ts` pero no se pinta en ninguna parte de esta página.
+  Para un panameño esas dos palabras desactivan la objeción del Casco antes de
+  que se forme: *sé dónde queda, hay estacionamiento, no es el Casco*. Es
+  información de conversión, y falta justo en la página donde se decide pagar.
+- **Mostrar "Tarjeta o Yappy"** arriba, no que se descubra al llegar al paso
+  del método de pago. El dominio propio es desconocido y el público de este
+  grupo venía comprando por `americantradehotel.com`; ver Yappy temprano es la
+  señal de que esto es local y confiable.
+
+**No inventes copy adicional.** Estos tres archivos y nada más; el resto del
+texto de la landing ya lo revisó Nestor.
 
 ---
 
