@@ -16,6 +16,29 @@ o `next build` va a fallar con "Faltan NEXT_PUBLIC_SUPABASE_URL...".
 
 ## 🔴 Hoy mismo
 
+### [ ] -1. Correr la migración 006 en Supabase *(5 minutos)*
+
+Guarda de qué video/anuncio de la campaña de Meta vino cada venta (UTMs).
+Sin esto la campaña sigue funcionando y se sigue vendiendo con normalidad —
+solo no sabremos qué video vendió qué hasta que corras esto.
+
+1. Copia el archivo al portapapeles (esto va en la Terminal, no en Supabase):
+   ```bash
+   cat "supabase/006_utm_tracking.sql" | pbcopy
+   ```
+2. Entra a [supabase.com](https://supabase.com) → tu proyecto → **SQL Editor**
+   → **New query**
+3. Pega (ahí sí, en el SQL Editor) y dale **Run**
+4. Deberías ver "Success".
+
+**Cómo sabes que funcionó:** abre
+`https://www.forasterosdeltango.com/?utm_source=prueba&utm_content=test-manual`,
+completa una compra de prueba, y en el SQL Editor corre
+`select buyer_name, utm_source, utm_content from orders order by created_at desc limit 1;`
+— debe traer los valores de prueba en vez de `null`.
+
+---
+
 ### [x] 0. Correr la migración 005 en Supabase *(2 minutos, URGENTE — ya la corriste)*
 
 Esta arregló un incidente real: desde la migración 003, **nadie podía

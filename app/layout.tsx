@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 
+import { CapturarUTM } from "@/components/CapturarUTM";
 import MetaPixel from "@/components/MetaPixel";
 import { EVENTO, precio } from "@/lib/event";
 import "./globals.css";
@@ -57,6 +58,7 @@ export default function RootLayout({
     <html lang="es">
       <body className={`${inter.variable} ${playfair.variable}`}>
         {children}
+        <CapturarUTM />
         {pixelId && <MetaPixel pixelId={pixelId} />}
       </body>
     </html>

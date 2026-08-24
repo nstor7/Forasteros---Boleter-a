@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { leerUTM } from "@/components/CapturarUTM";
 import { EVENTO, precio } from "@/lib/event";
 
 type Metodo = "card" | "yappy";
@@ -50,6 +51,7 @@ export default function FormularioCompra({
           cantidad,
           metodo,
           aceptaNoticias,
+          utm: leerUTM(),
         }),
       });
 

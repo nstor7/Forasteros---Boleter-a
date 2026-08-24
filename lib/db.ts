@@ -59,6 +59,12 @@ export type Order = {
   // Si acepta que le escribamos sobre futuros conciertos. Nace en `true`
   // porque la casilla en /boletos viene pre-marcada (decisión de Nestor).
   marketing_opt_in: boolean;
+  // De qué anuncio vino la venta. Todas nulas si la persona entró directo
+  // (WhatsApp, boca a boca, orden manual del admin) — ver UTM-TRACKING.md.
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  utm_content: string | null;
 };
 
 export type Ticket = {

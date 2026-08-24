@@ -38,6 +38,10 @@ export type DatosCompra = {
   // Opcional porque un `undefined` (petición vieja, o llamada manual) debe
   // tratarse igual que "sí" — la columna en Supabase también nace en `true`.
   aceptaNoticias?: boolean;
+  // De qué anuncio vino la visita, leído de localStorage en el navegador
+  // (ver components/CapturarUTM.tsx). Ausente en la mayoría de las compras
+  // — solo viene cuando la persona llegó desde un enlace de campaña.
+  utm?: Record<string, string>;
 };
 
 /** Validación mínima pero real; el navegador no es una fuente confiable. */
@@ -83,6 +87,10 @@ function validar(datos: DatosCompra): DatosCompra {
     cantidad,
     metodo: datos.metodo,
     aceptaNoticias: datos.aceptaNoticias !== false,
+    // No hace falta sanear más allá de lo que ya hace CapturarUTM (recorta a
+    // 100 caracteres): no es texto libre que se muestre en ninguna pantalla,
+    // solo se lee de vuelta en consultas SQL.
+    utm: datos.utm,
   };
 }
 
@@ -108,29 +116,40 @@ export async function crearOrden(
     if (!error) {
       const orden = data as Order;
 
+      // Todo lo que `crear_orden` no sabe guardar (por diseño — no se le
+      // tocan los parámetros, ver T7 en HANDOFF.md) se junta aquí en un solo
+      // `update` para no hacer dos escrituras. Si no hay nada que
+      // actualizar, no se escribe.
+      const extras: Record<string, unknown> = {};
+
       // La columna nace en `true` (mismo default que la casilla en
-      // /boletos), así que solo hace falta un segundo `update` cuando la
-      // persona la desmarcó — evita una escritura extra en el caso común.
-      // Si falla (por ejemplo, la migración 004 todavía no corrió y la
-      // columna no existe), la orden ya se creó y el boleto ya se reservó:
-      // no vale la pena tirar toda la compra por una preferencia de correo.
-      // Queda registrada como si hubiera aceptado; se puede corregir a mano.
-      if (!datos.aceptaNoticias) {
-        const { data: actualizada, error: errorNoticias } = await db
-          .from("orders")
-          .update({ marketing_opt_in: false })
-          .eq("id", orden.id)
-          .select()
-          .single();
+      // /boletos), así que solo hay que escribir cuando la persona la
+      // desmarcó.
+      if (!datos.aceptaNoticias) extras.marketing_opt_in = false;
 
-        if (errorNoticias) {
-          console.error("[orders] no se pudo guardar marketing_opt_in", errorNoticias.message);
-          return orden;
-        }
-        return actualizada as Order;
+      if (datos.utm?.utm_source) extras.utm_source = datos.utm.utm_source;
+      if (datos.utm?.utm_medium) extras.utm_medium = datos.utm.utm_medium;
+      if (datos.utm?.utm_campaign) extras.utm_campaign = datos.utm.utm_campaign;
+      if (datos.utm?.utm_content) extras.utm_content = datos.utm.utm_content;
+
+      if (Object.keys(extras).length === 0) return orden;
+
+      // Si esto falla (por ejemplo, una migración todavía no corrió y falta
+      // una columna), la orden ya se creó y el boleto ya se reservó: no vale
+      // la pena tirar toda la compra por una preferencia de correo o una
+      // etiqueta de campaña. Queda sin esos extras; se puede corregir a mano.
+      const { data: actualizada, error: errorExtras } = await db
+        .from("orders")
+        .update(extras)
+        .eq("id", orden.id)
+        .select()
+        .single();
+
+      if (errorExtras) {
+        console.error("[orders] no se pudieron guardar los extras", errorExtras.message);
+        return orden;
       }
-
-      return orden;
+      return actualizada as Order;
     }
 
     if (error.message.includes("sin_cupo")) {

@@ -148,6 +148,7 @@ supabase/002_ordenes.sql                  Migración 002 — ya corrida
 supabase/003_ordenes_manuales.sql         Migración 003 — ya corrida
 supabase/004_marketing_opt_in.sql         Migración 004 — ya corrida
 supabase/005_fix_crear_orden_duplicado.sql  Migración 005 — ya corrida (urgente, ver T7)
+supabase/006_utm_tracking.sql             Migración 006 — PENDIENTE de correr
 ```
 
 **Invariantes que no se pueden romper:**
@@ -503,46 +504,47 @@ navegador).
 solo lo puede confirmar Nestor desde su cuenta — pídeselo si hace falta
 cerrar el loop del todo.
 
-### T12 — Guardar de qué anuncio vino cada venta (UTMs) (23 de agosto) — pendiente
+### T12 — Guardar de qué anuncio vino cada venta (UTMs) (23 de agosto, hecha el 24) ✅
 
-**Contexto:** a partir del 23 de agosto se corre una campaña en Meta con varios
-videos distintos apuntando a `/boletos`. Sin esto sabremos cuántos boletos se
-vendieron, pero **no cuál video los vendió**. Con esto lo sabemos leyendo
-nuestra propia base de datos, sin depender de la atribución de Meta (que es
-menos confiable y se pierde si el Pixel de T11 falla).
+Nestor confirmó el 24 de agosto (en otra conversación, sobre marketing) que
+los cambios de código los hiciera yo aquí, para mantener todo ordenado.
+Implementado siguiendo `UTM-TRACKING.md` al pie de la letra:
 
-**Las instrucciones completas están en `UTM-TRACKING.md`, en la raíz del
-repo.** Es un documento autocontenido, paso a paso, con el SQL y el código
-listos. Léelo entero antes de empezar. Resumen de lo que toca:
+1. `supabase/006_utm_tracking.sql` — **PENDIENTE de correr**. Cuatro columnas
+   nullable en `orders` (`utm_source`, `utm_medium`, `utm_campaign`,
+   `utm_content`) más un índice.
+2. `components/CapturarUTM.tsx` — captura los parámetros de la URL y los
+   guarda en `localStorage` (no `sessionStorage`, a propósito).
+3. Montado en `app/layout.tsx`.
+4. `components/FormularioCompra.tsx` lee lo guardado con `leerUTM()` y lo
+   manda con la compra.
+5. `lib/orders.ts`: el `update` posterior a `crear_orden` ahora junta
+   `marketing_opt_in` y las cuatro etiquetas UTM en una sola escritura
+   condicional (no dos) — **no se tocó la firma de `crear_orden`**.
 
-1. `supabase/006_utm_tracking.sql` — cuatro columnas nullable en `orders`
-   (`utm_source`, `utm_medium`, `utm_campaign`, `utm_content`) más un índice.
-2. `components/CapturarUTM.tsx` — captura los parámetros de la URL al llegar
-   y los guarda en `localStorage` (no `sessionStorage`: mucha gente ve el
-   anuncio, entra a mirar, y vuelve a comprar horas después).
-3. Montarlo en `app/layout.tsx` para que corra en todas las páginas — se
-   puede llegar directo a `/boletos` desde un anuncio.
-4. `components/FormularioCompra.tsx` lee lo guardado y lo manda con la compra.
-5. `lib/orders.ts` lo guarda en el `update` posterior a `crear_orden`.
+**Probado el 24 de agosto**, sin la migración corrida todavía (a propósito,
+para probar justo el caso sin romper nada): abrí el sitio con
+`?utm_source=prueba&utm_medium=paid&utm_campaign=test&utm_content=test-manual`,
+confirmé que `localStorage` guardó las cuatro etiquetas, completé una compra
+de prueba real por Yappy, y confirmé que la orden se creó bien (`201`) con
+solo un `console.error` avisando que faltan las columnas — exactamente el
+comportamiento defensivo que pedía el documento. Orden de prueba borrada
+después; las órdenes reales que había en la base (incluyendo unas nuevas de
+"Carolyn McCummings" que aparecieron mientras probaba) no se tocaron.
 
-**⚠️ Lo más importante — no toques la firma de `crear_orden`.** Este repo ya
-se cayó una vez por eso (ver T7 y el invariante de la sección 5). La solución
-del documento usa el mismo patrón seguro que ya usa `marketing_opt_in`: crear
-la orden como siempre y después hacer un `update` sobre la fila. Es aburrido
-y es correcto. Mantenlo así.
-
-**El caso que no se puede romper:** una compra normal, entrando directo al
-sitio sin parámetros en la URL, tiene que seguir funcionando igual — las
-cuatro columnas quedan en `null` y la orden se crea sin problema.
+**Falta:** correr la migración `006` para que las etiquetas empiecen a
+guardarse de verdad. Hasta entonces el sitio vende con normalidad, solo sin
+esa información.
 
 **Complementa a T11 (Pixel), no lo reemplaza.** El Pixel le sirve a Meta para
 optimizar; los UTMs nos sirven a nosotros para saber la verdad.
 
-### T13 — Ajustes de texto pedidos por Nestor el 23 de agosto — pendiente
+### T13 — Ajustes de texto pedidos por Nestor el 23 de agosto (hecha el 24) ✅
 
 Estos son los cambios específicos que T5.3 estaba esperando ("Nestor va a
 traer cambios específicos"). Ya llegaron. Salen de armar la campaña de Meta,
-y cada uno tiene una razón concreta.
+y cada uno tiene una razón concreta. Los tres se hicieron tal cual estaban
+pedidos, sin agregar copy adicional.
 
 **`app/page.tsx` — sección "El grupo":**
 
@@ -578,6 +580,17 @@ pantalla, pero no cuesta nada dejarlo correcto.
 
 **No inventes copy adicional.** Estos tres archivos y nada más; el resto del
 texto de la landing ya lo revisó Nestor.
+
+**Hecho el 24 de agosto:**
+- Párrafo de "115 personas nada más" quitado; reemplazado por una línea sobre
+  bailarines y cantante invitado (`app/page.tsx`).
+- `alt` del hero cambiado a `"{grupo}, banda de tango en vivo"` — ya no
+  menciona el Casco Antiguo.
+- `EVENTO.direccion` y "Tarjeta o Yappy" agregados al encabezado de
+  `/boletos`, arriba del formulario.
+- Verificado en el navegador (`npx next build` limpio, `eslint` limpio, las
+  tres pantallas abiertas y comparado el texto contra lo pedido línea por
+  línea).
 
 ---
 

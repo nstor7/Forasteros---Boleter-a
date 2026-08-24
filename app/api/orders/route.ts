@@ -31,6 +31,10 @@ export async function POST(request: Request) {
         cantidad: Number(datos.cantidad ?? 0),
         metodo: datos.metodo === "yappy" ? "yappy" : "card",
         aceptaNoticias: datos.aceptaNoticias !== false,
+        utm:
+          datos.utm && typeof datos.utm === "object"
+            ? (datos.utm as Record<string, string>)
+            : undefined,
       },
       tipo.id,
     );

@@ -10,7 +10,7 @@ export default function Home() {
       <section className="relative min-h-[100svh] overflow-hidden">
         <Image
           src="/fotos/hero-arco.jpg"
-          alt={`${EVENTO.grupo} en el Casco Antiguo`}
+          alt={`${EVENTO.grupo}, banda de tango en vivo`}
           fill
           priority
           sizes="100vw"
@@ -77,8 +77,8 @@ export default function Home() {
                 tango en el corazón de la ciudad.
               </p>
               <p>
-                Una velada íntima, para {EVENTO.aforo} personas nada más, en un
-                escenario que se presta para escuchar de cerca.
+                La noche suma bailarines en escena y un cantante invitado —
+                un show completo, no solo un concierto sentado.
               </p>
             </div>
           </div>
