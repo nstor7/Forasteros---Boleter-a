@@ -16,7 +16,7 @@ o `next build` va a fallar con "Faltan NEXT_PUBLIC_SUPABASE_URL...".
 
 ## 🔴 Hoy mismo
 
-### [ ] -1. Correr la migración 006 en Supabase *(5 minutos)*
+### [x] -1. Correr la migración 006 en Supabase *(5 minutos)* — hecho, verificado el 24 de agosto
 
 Guarda de qué video/anuncio de la campaña de Meta vino cada venta (UTMs).
 Sin esto la campaña sigue funcionando y se sigue vendiendo con normalidad —

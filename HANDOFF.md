@@ -148,7 +148,7 @@ supabase/002_ordenes.sql                  Migración 002 — ya corrida
 supabase/003_ordenes_manuales.sql         Migración 003 — ya corrida
 supabase/004_marketing_opt_in.sql         Migración 004 — ya corrida
 supabase/005_fix_crear_orden_duplicado.sql  Migración 005 — ya corrida (urgente, ver T7)
-supabase/006_utm_tracking.sql             Migración 006 — PENDIENTE de correr
+supabase/006_utm_tracking.sql             Migración 006 — ya corrida
 ```
 
 **Invariantes que no se pueden romper:**
@@ -510,9 +510,9 @@ Nestor confirmó el 24 de agosto (en otra conversación, sobre marketing) que
 los cambios de código los hiciera yo aquí, para mantener todo ordenado.
 Implementado siguiendo `UTM-TRACKING.md` al pie de la letra:
 
-1. `supabase/006_utm_tracking.sql` — **PENDIENTE de correr**. Cuatro columnas
-   nullable en `orders` (`utm_source`, `utm_medium`, `utm_campaign`,
-   `utm_content`) más un índice.
+1. `supabase/006_utm_tracking.sql` — ya corrida. Cuatro columnas nullable en
+   `orders` (`utm_source`, `utm_medium`, `utm_campaign`, `utm_content`) más
+   un índice.
 2. `components/CapturarUTM.tsx` — captura los parámetros de la URL y los
    guarda en `localStorage` (no `sessionStorage`, a propósito).
 3. Montado en `app/layout.tsx`.
@@ -532,9 +532,16 @@ comportamiento defensivo que pedía el documento. Orden de prueba borrada
 después; las órdenes reales que había en la base (incluyendo unas nuevas de
 "Carolyn McCummings" que aparecieron mientras probaba) no se tocaron.
 
-**Falta:** correr la migración `006` para que las etiquetas empiecen a
-guardarse de verdad. Hasta entonces el sitio vende con normalidad, solo sin
-esa información.
+**Migración 006 corrida y verificada el 24 de agosto.** Antes de darla por
+buena confirmé, otra vez, que `crear_orden` (sin `p_manual`) sigue
+resolviendo sin ambigüedad — costumbre desde T7. Después probé de punta a
+punta en producción real: abrí `www.forasterosdeltango.com` con
+`?utm_source=prueba&utm_medium=paid&utm_campaign=verificacion006&utm_content=test-final2`,
+completé una compra real por Yappy, y consulté la orden directo en
+Supabase — las cuatro etiquetas quedaron guardadas exactas. Orden de prueba
+borrada después; las órdenes reales (incluyendo tres de "Carolyn
+McCummings" que siguen `pending_review`, esperando que alguien les revise
+el comprobante) no se tocaron. **T12 cerrada.**
 
 **Complementa a T11 (Pixel), no lo reemplaza.** El Pixel le sirve a Meta para
 optimizar; los UTMs nos sirven a nosotros para saber la verdad.
