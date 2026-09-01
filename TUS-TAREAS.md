@@ -16,7 +16,7 @@ o `next build` va a fallar con "Faltan NEXT_PUBLIC_SUPABASE_URL...".
 
 ## 🔴 Hoy mismo
 
-### [ ] -2. Correr la migración 007 en Supabase *(5 minutos)*
+### [x] -2. Correr la migración 007 en Supabase *(5 minutos)* — hecho, verificado el 24 de agosto
 
 Habilita la casilla "Es cortesía" en "Generar boletos a mano" — hasta que
 corras esto, si la marcas va a fallar (limpio, sin romper el resto del

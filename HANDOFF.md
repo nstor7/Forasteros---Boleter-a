@@ -599,7 +599,7 @@ texto de la landing ya lo revisó Nestor.
   tres pantallas abiertas y comparado el texto contra lo pedido línea por
   línea).
 
-### T14 — Boletos de cortesía (24 de agosto)
+### T14 — Boletos de cortesía (24 de agosto) ✅ hecha
 
 Nestor pidió corregir dos órdenes reales donde 1 de N boletos fue cortesía
 (sin cobrar), y una forma de generar cortesías hacia adelante. Le di mi
@@ -636,9 +636,14 @@ falló limpio con el error real de Postgres
 en blanco ni comportamiento raro. Esto sí dejó una orden a medias (se creó a
 precio normal antes de que fallara el segundo `update`): la encontré y
 borré. Confirmado que el aforo volvió a 81 y no quedó ninguna orden de
-prueba. **Falta correr la migración 007 antes de usar la casilla de
-verdad** — hasta entonces, si alguien la marca, va a fallar (limpio, pero
-falla) y va a dejar una orden a precio normal que hay que borrar a mano.
+prueba.
+
+**Migración 007 corrida y verificada el mismo día en producción real:**
+antes de darla por buena, confirmé (otra vez, costumbre desde T7) que
+`crear_orden` seguía resolviendo sin ambigüedad. Después generé un boleto
+real en `www.forasterosdeltango.com` con la casilla marcada — quedó con
+`total_cents: 0`, `status: paid`, `admin_note: "Cortesía"`. Orden de prueba
+borrada después. **T14 cerrada.**
 
 ---
 
