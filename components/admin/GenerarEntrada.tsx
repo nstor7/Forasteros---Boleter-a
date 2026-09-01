@@ -66,6 +66,16 @@ export default function GenerarEntrada() {
               />
             </div>
 
+            <label className="flex items-start gap-3 text-sm text-hueso-tenue">
+              <input
+                type="checkbox"
+                name="cortesia"
+                value="si"
+                className="mt-0.5 h-4 w-4 shrink-0 accent-oro"
+              />
+              Es cortesía (se genera con costo $0)
+            </label>
+
             {estado?.mensaje && (
               <p className="rounded-sm border border-oro/40 bg-oro/10 px-3 py-2 text-sm text-oro-claro">
                 {estado.mensaje}

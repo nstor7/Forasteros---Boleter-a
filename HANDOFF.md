@@ -599,6 +599,47 @@ texto de la landing ya lo revisó Nestor.
   tres pantallas abiertas y comparado el texto contra lo pedido línea por
   línea).
 
+### T14 — Boletos de cortesía (24 de agosto)
+
+Nestor pidió corregir dos órdenes reales donde 1 de N boletos fue cortesía
+(sin cobrar), y una forma de generar cortesías hacia adelante. Le di mi
+recomendación — casilla en el formulario, no pasarme la info cada vez, para
+que no dependa de mí estar disponible — y la aceptó.
+
+**Corrección de datos, hecha directo en Supabase:**
+- Leopoldo Magallón (`FOR-2D28`, 2 boletos): `total_cents` de 3000 a 1500.
+- Carlos Quirós (`FOR-RQ3Q`, 3 boletos): `total_cents` de 4500 a 3000.
+- En ambos casos la **cantidad no cambió** — los boletos/QR ya emitidos
+  siguen siendo válidos, solo se corrigió cuánto dinero entró de verdad.
+  `admin_note` de cada uno explica el ajuste.
+
+**Función nueva — casilla "Es cortesía" en "Generar boletos a mano":**
+- `supabase/007_cortesias.sql` — **PENDIENTE de correr**. La tabla `orders`
+  tenía `check (total_cents > 0)`; una cortesía cobra $0, así que la
+  restricción pasa a `>= 0` (nunca negativo). Es un cambio de constraint, no
+  de firma de función — no tiene el problema de T7.
+- `lib/orders.ts`: `DatosVentaManual` ganó `cortesia?: boolean`.
+  `crearOrdenManual` sigue sin tocar `crear_orden` — cuando `cortesia` es
+  `true`, el mismo `update` posterior que ya pone `admin_note` también pone
+  `total_cents: 0`.
+- `components/admin/GenerarEntrada.tsx`: casilla nueva, sin marcar por
+  defecto (la cortesía es la excepción, no la regla).
+- Para varios boletos donde solo alguno es cortesía (como los casos de
+  arriba), la forma de usarlo es generar **dos órdenes separadas**: una a
+  precio normal y otra de $0 — más simple y más claro en los reportes que
+  intentar mezclar precios dentro de una sola orden.
+
+**Probado el 24 de agosto, antes de correr la migración 007 (a propósito):**
+generación normal (sin cortesía) funcionó bien. Con la casilla marcada,
+falló limpio con el error real de Postgres
+(`violates check constraint "orders_total_cents_check"`) — nada de pantalla
+en blanco ni comportamiento raro. Esto sí dejó una orden a medias (se creó a
+precio normal antes de que fallara el segundo `update`): la encontré y
+borré. Confirmado que el aforo volvió a 81 y no quedó ninguna orden de
+prueba. **Falta correr la migración 007 antes de usar la casilla de
+verdad** — hasta entonces, si alguien la marca, va a fallar (limpio, pero
+falla) y va a dejar una orden a precio normal que hay que borrar a mano.
+
 ---
 
 ## 7. Cómo verificar tu trabajo

@@ -104,6 +104,7 @@ export async function generarEntrada(_estado: unknown, form: FormData) {
         telefono: form.get("telefono") ? String(form.get("telefono")) : "",
         cantidad,
         nota: String(form.get("nota") ?? ""),
+        cortesia: form.get("cortesia") === "si",
       },
       tipo.id,
     );

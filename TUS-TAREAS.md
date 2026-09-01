@@ -16,6 +16,27 @@ o `next build` va a fallar con "Faltan NEXT_PUBLIC_SUPABASE_URL...".
 
 ## 🔴 Hoy mismo
 
+### [ ] -2. Correr la migración 007 en Supabase *(5 minutos)*
+
+Habilita la casilla "Es cortesía" en "Generar boletos a mano" — hasta que
+corras esto, si la marcas va a fallar (limpio, sin romper el resto del
+panel, pero falla).
+
+1. Copia el archivo al portapapeles (esto va en la Terminal, no en Supabase):
+   ```bash
+   cat "supabase/007_cortesias.sql" | pbcopy
+   ```
+2. Entra a [supabase.com](https://supabase.com) → tu proyecto → **SQL Editor**
+   → **New query**
+3. Pega (ahí sí, en el SQL Editor) y dale **Run**
+4. Deberías ver "Success".
+
+**Cómo sabes que funcionó:** en `/admin`, abre "Generar boletos a mano",
+marca "Es cortesía", llena un boleto de prueba y dale enviar — debe
+generarse con `$0.00` en vez de dar un error.
+
+---
+
 ### [x] -1. Correr la migración 006 en Supabase *(5 minutos)* — hecho, verificado el 24 de agosto
 
 Guarda de qué video/anuncio de la campaña de Meta vino cada venta (UTMs).

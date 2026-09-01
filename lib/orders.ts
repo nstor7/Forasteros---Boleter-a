@@ -182,6 +182,10 @@ export type DatosVentaManual = {
   telefono?: string;
   cantidad: number;
   nota?: string;
+  // Cortesía: la orden se cobra a $0. No es un método de pago nuevo (sigue
+  // siendo "manual"), solo cambia el monto — así no hace falta tocar el
+  // esquema para una categoría más.
+  cortesia?: boolean;
 };
 
 /**
@@ -200,7 +204,9 @@ export async function crearOrdenManual(
   const email = entrada.email?.trim().toLowerCase() ?? "";
   const telefono = entrada.telefono?.trim() ?? "";
   const cantidad = Number(entrada.cantidad);
-  const nota = entrada.nota?.trim() || "Boleto generado manualmente desde el panel";
+  const nota =
+    entrada.nota?.trim() ||
+    (entrada.cortesia ? "Cortesía" : "Boleto generado manualmente desde el panel");
 
   if (nombre.length < 2 || nombre.length > 120) {
     throw new ErrorDeOrden("datos_invalidos", "Escribe el nombre completo.");
@@ -229,11 +235,16 @@ export async function crearOrdenManual(
 
     if (!error) {
       // `admin_note` no lo pone `crear_orden` (ese campo es de uso general,
-      // no vale la pena pasarlo como parámetro para un solo caso); se
-      // completa aquí en un segundo paso.
+      // no vale la pena pasarlo como parámetro para un solo caso), y lo
+      // mismo para el monto de una cortesía: se completa aquí en un solo
+      // `update` posterior, sin tocar la firma de `crear_orden` (ver T7 en
+      // HANDOFF.md sobre por qué eso es una mala idea).
       const { data: actualizada, error: errorNota } = await db
         .from("orders")
-        .update({ admin_note: nota })
+        .update({
+          admin_note: nota,
+          ...(entrada.cortesia ? { total_cents: 0 } : {}),
+        })
         .eq("id", (data as Order).id)
         .select()
         .single();
