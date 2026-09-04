@@ -7,6 +7,18 @@ operativo.
 **Primer prompt sugerido para retomar:** "Lee HANDOFF.md y continúa con la
 siguiente tarea pendiente."
 
+## ⏸️ El evento ya pasó — venta cerrada a propósito (3 de septiembre)
+
+**Los Forasteros del Tango tocaron el 2 de septiembre. La venta de boletos
+está cerrada desde el 3 de septiembre, a pedido de Nestor**, para que nadie
+compre por error entrando por un enlace viejo. El sitio sigue arriba y
+funcionando para todo lo demás (ver la puerta que abre y cierra en T15, más
+abajo, y la guía para reabrir para un evento nuevo).
+
+**Antes de tocar nada de código nuevo:** lee T15 completa. Ahí está el cómo y
+el porqué del cierre, y los pasos exactos para reabrir cuando haya otro
+concierto.
+
 ---
 
 ## 1. Qué es este proyecto
@@ -644,6 +656,81 @@ antes de darla por buena, confirmé (otra vez, costumbre desde T7) que
 real en `www.forasterosdeltango.com` con la casilla marcada — quedó con
 `total_cents: 0`, `status: paid`, `admin_note: "Cortesía"`. Orden de prueba
 borrada después. **T14 cerrada.**
+
+### T15 — Cierre del evento (3 de septiembre) ✅ hecha
+
+El concierto fue el 2 de septiembre. Nestor pidió al día siguiente cerrar la
+venta ("que nadie vaya a meterse o pagar por error") pero **dejar todo listo
+para reusar la plataforma en un evento futuro** — nada de borrar código ni
+tirar la base de datos.
+
+**Números finales** (consultados en Supabase el 3 de septiembre, no de
+memoria): **74 boletos vendidos** en 43 órdenes pagadas, **$1,020
+recaudados** (`total_cents` ya refleja los `$0` de las cortesías), **45 de
+esos 74 boletos escaneados** en la puerta. 13 órdenes `expired` (18 boletos)
+y 1 `rejected` — abandonos normales de checkout, no algo que arreglar.
+
+**Cómo se cerró — dos capas, no una sola:**
+
+1. **La real, a nivel de base de datos:** `ticket_types.active = false` en
+   la fila "Entrada General". `crear_orden` en Postgres exige
+   `where id = p_tipo and active` — con esto, **cualquier** intento de crear
+   una orden falla con `tipo_no_encontrado`, venga de la pantalla de compra,
+   de la generación manual del admin, o de un `curl` directo a
+   `/api/orders` saltándose la interfaz. Probado los tres caminos el mismo
+   día; ninguno pudo crear una orden.
+2. **La visible, para que no se vea roto:** `app/boletos/page.tsx` ahora
+   detecta cuándo no hay ningún tipo de boleto activo y muestra "Gracias por
+   acompañarnos — la venta de boletos para este evento ya cerró" en vez del
+   formulario. Antes de este cambio, alguien que llegara por un enlace viejo
+   iba a ver un formulario que parece funcionar y falla recién al enviarlo
+   — mismo resultado seguro, pero peor primera impresión.
+
+**No se tocó:** las credenciales de PayPal (siguen en `live`, dormidas —
+regla de la sección 8, Nestor no pidió cambiarlas), el Pixel de Meta, ni
+ninguna orden ya existente. El sitio entero sigue arriba y navegable —
+landing, `/orden/[id]` para quien quiera volver a ver su QR, `/admin`,
+`/validar` — solo `/boletos` dejó de vender.
+
+**Pendiente de que Nestor confirme (no borrado sin su ok):** al revisar el
+estado final aparecieron 3 órdenes `pending_review` de Yappy nunca resueltas
+— Edwin Jaén (`FOR-QG7T`), Rosana Amarillo (`FOR-WKLV`), John Perryman
+(`FOR-MM66`), ninguna con comprobante subido. Los tres tienen una orden
+**pagada** exitosa a los pocos minutos del intento fallido (mismo patrón que
+Carolyn McCummings y zhoe Reina, ya visto antes) — casi seguro son intentos
+duplicados, no pagos perdidos. Se le preguntó a Nestor si se borran igual
+que los casos anteriores; falta su confirmación antes de tocarlos.
+
+**Cómo reabrir para un evento futuro** — en orden:
+
+1. **`lib/event.ts`**: actualizar `fecha`, `fechaTexto`, `horaTexto`,
+   `horaPuertasTexto`, `lugar`, `direccion`, `mapaUrl`, `precioCents`,
+   `aforo`, `yappyTelefono`. Es un solo archivo a propósito (ver el
+   comentario ahí mismo).
+2. **Supabase — nueva fila en `ticket_types`**, no reactivar la vieja: así
+   el historial del evento pasado queda intacto y separado.
+   ```sql
+   insert into ticket_types (name, price_cents, capacity)
+   values ('Entrada General', 1500, 115); -- precio y aforo del evento nuevo
+   ```
+   `crear_orden` ya filtra por `active = true` sin cambios — la fila nueva
+   queda activa por default, la vieja se queda en `false` como archivo.
+3. **`app/boletos/page.tsx` vuelve a vender solo:** en cuanto exista una fila
+   `active = true` en `ticket_types`, `tipoBoletoActivo()` la encuentra y el
+   formulario aparece de nuevo — no hace falta tocar ese archivo.
+4. Revisar `PAYPAL_WEBHOOK_ID` y las credenciales de PayPal en Vercel: si es
+   el mismo dominio y la misma cuenta de PayPal, deberían servir tal cual.
+   Si cambia el dominio, hay que registrar un webhook nuevo (ver T2).
+   **No cambiar `PAYPAL_ENV` a `sandbox`** solo por estar entre eventos —
+   sigue siendo una decisión de Nestor, no algo que hacer por rutina.
+5. `TICKET_SECRET` puede quedarse igual — los QR del evento pasado ya no
+   importan, y no hay ningún problema en reusarlo para uno nuevo.
+6. Revisar textos de la landing (`app/page.tsx`) y del correo
+   (`lib/email.ts`) por cualquier mención específica de "Los Forasteros del
+   Tango" o "2 de septiembre" que ya no aplique al evento nuevo.
+7. Meta Pixel y UTMs (T11/T12) siguen funcionando tal cual — no hace falta
+   tocarlos, el `utm_campaign` de la migración solo distingue qué anuncio
+   vendió qué, así que un nombre de campaña nuevo ya los separa solo.
 
 ---
 

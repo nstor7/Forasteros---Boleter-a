@@ -12,13 +12,39 @@ export const dynamic = "force-dynamic";
 
 export default async function ComprarPage() {
   let disponibles: number | null = null;
+  // Se pone en `false` solo cuando de verdad no hay ningún tipo de boleto
+  // activo (evento cerrado a propósito, ver `ticket_types.active` en
+  // Supabase) — no por un simple hipo de red, que se resuelve solo.
+  let ventaAbierta = true;
 
   try {
     const tipo = await tipoBoletoActivo();
     disponibles = await boletosDisponibles(tipo.id);
   } catch {
-    // Sin base de datos no podemos vender; el formulario lo dirá al enviar.
-    disponibles = null;
+    ventaAbierta = false;
+  }
+
+  if (!ventaAbierta) {
+    return (
+      <main className="mx-auto max-w-lg px-6 py-12 text-center sm:py-20">
+        <Link href="/" className="text-sm text-hueso-tenue transition hover:text-oro">
+          ← Volver
+        </Link>
+        <div className="mt-16">
+          <p className="mb-3 text-xs tracking-[0.3em] text-oro uppercase">
+            {EVENTO.titulo}
+          </p>
+          <h1 className="font-display text-4xl text-hueso sm:text-5xl">
+            Gracias por acompañarnos
+          </h1>
+          <div className="filete my-6" />
+          <p className="text-hueso-tenue">
+            La venta de boletos para este evento ya cerró. Síguenos para
+            enterarte del próximo.
+          </p>
+        </div>
+      </main>
+    );
   }
 
   // La opción de tarjeta solo aparece si PayPal está configurado. Mostrar un
