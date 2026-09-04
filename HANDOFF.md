@@ -692,14 +692,15 @@ ninguna orden ya existente. El sitio entero sigue arriba y navegable —
 landing, `/orden/[id]` para quien quiera volver a ver su QR, `/admin`,
 `/validar` — solo `/boletos` dejó de vender.
 
-**Pendiente de que Nestor confirme (no borrado sin su ok):** al revisar el
-estado final aparecieron 3 órdenes `pending_review` de Yappy nunca resueltas
+**Resuelto el 3 de septiembre:** las 3 órdenes `pending_review` sin resolver
 — Edwin Jaén (`FOR-QG7T`), Rosana Amarillo (`FOR-WKLV`), John Perryman
-(`FOR-MM66`), ninguna con comprobante subido. Los tres tienen una orden
-**pagada** exitosa a los pocos minutos del intento fallido (mismo patrón que
-Carolyn McCummings y zhoe Reina, ya visto antes) — casi seguro son intentos
-duplicados, no pagos perdidos. Se le preguntó a Nestor si se borran igual
-que los casos anteriores; falta su confirmación antes de tocarlos.
+(`FOR-MM66`) — eran intentos duplicados, confirmado por Nestor (no supieron
+completar Yappy y volvieron a comprar bien, mismo patrón que Carolyn
+McCummings y zhoe Reina). Se confirmó que ninguna tenía boletos ya emitidos,
+y se borraron directo de la base (no por "rechazar", para no mandarles un
+correo confuso meses después del concierto). **No queda ninguna orden
+`pending`/`pending_review` en toda la base — la cuenta quedó cerrada del
+todo.**
 
 **Cómo reabrir para un evento futuro** — en orden:
 
