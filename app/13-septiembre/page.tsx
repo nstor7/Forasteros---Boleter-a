@@ -192,13 +192,15 @@ export default function TreceDeSeptiembre() {
 
       {/* ---------- Cierre ---------- */}
       <section className="relative overflow-hidden">
+        {/* Los rostros están a un cuarto de la altura de esta foto; el
+            encuadre por defecto los dejaba fuera del recorte. */}
         <Image
           src="/fotos/hero-arco.jpg"
           alt=""
           aria-hidden
           fill
           sizes="100vw"
-          className="object-cover object-[50%_35%]"
+          className="object-cover object-[50%_25%]"
         />
         <div className="absolute inset-0 bg-noche/80" />
 

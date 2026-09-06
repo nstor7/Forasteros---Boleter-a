@@ -116,13 +116,15 @@ export default function Home() {
 
       {/* ---------- Cierre ---------- */}
       <section className="relative overflow-hidden">
+        {/* En esta foto el grupo está más abajo que en la del arco, así que el
+            porcentaje no coincide con el de la otra página. */}
         <Image
           src="/fotos/puerta-colonial.jpg"
           alt=""
           aria-hidden
           fill
           sizes="100vw"
-          className="object-cover object-[50%_35%]"
+          className="object-cover object-[50%_44%]"
         />
         <div className="absolute inset-0 bg-noche/80" />
 

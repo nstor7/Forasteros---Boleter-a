@@ -5,7 +5,11 @@ import { PROXIMO } from "../../lib/proximo.ts";
  *
  * Reglas de tono que salen de lo aprendido en agosto: nada de registro
  * publicitario, sin signos de exclamación, y el tango como gancho y no como
- * filtro. Es un correo de una persona a alguien que ya estuvo en la sala.
+ * filtro. Es un correo de una persona, y por eso lo firma Nestor.
+ *
+ * **No da por hecho que la persona fue al concierto del 2.** De los 74 boletos
+ * solo se escanearon 45 en la puerta, así que hay compradores que no llegaron:
+ * el agradecimiento es por haber apoyado, que vale para los dos casos.
  */
 
 export const asunto = "Volvemos a tocar este domingo";
@@ -16,18 +20,16 @@ export function cuerpo(nombre: string, enlaceCompra: string): string {
   return `
     <p>Hola ${nombre},</p>
 
+    <p>Gracias por habernos apoyado con el concierto del 2 de septiembre.</p>
+
     <p>
-      Te escribimos porque fuiste parte de la noche del 2 de septiembre en Rock
-      and Folk. Se llenó, y para nosotros fue la mejor que hemos tocado juntos.
+      Este <strong>domingo 13</strong> volvemos a tocar${PROXIMO.lugar ? `, esta vez en <strong>The Club</strong>, del American Trade Hotel` : ""}.
+      El programa se llama <em>${PROXIMO.titulo}</em>.
     </p>
 
     <p>
-      Este <strong>domingo 13</strong> volvemos a tocar${PROXIMO.lugar ? `, esta vez en <strong>${PROXIMO.lugar}</strong>` : ""},
-      con un programa que se llama <em>${PROXIMO.titulo}</em>. Es un salón
-      chico, de los de escuchar de cerca.
+      <strong>${cuando}</strong>${PROXIMO.lugar ? `<br>${PROXIMO.lugar}` : ""}${PROXIMO.direccion ? `<br>${PROXIMO.direccion}` : ""}${PROXIMO.precioTexto ? `<br>${PROXIMO.precioTexto}` : ""}
     </p>
-
-    <p><strong>${cuando}</strong>${PROXIMO.direccion ? `<br>${PROXIMO.direccion}` : ""}${PROXIMO.precioTexto ? `<br>${PROXIMO.precioTexto}` : ""}</p>
 
     <p style="margin:28px 0">
       <a href="${enlaceCompra}" style="display:inline-block;background:#d9a441;color:#0c0a09;text-decoration:none;padding:14px 28px;border-radius:999px;font-weight:600">
@@ -35,13 +37,10 @@ export function cuerpo(nombre: string, enlaceCompra: string): string {
       </a>
     </p>
 
-    ${PROXIMO.lugar ? `<p style="font-size:14px">La venta la maneja ${PROXIMO.lugar} en su propia página.</p>` : ""}
+    <p style="font-size:14px">La venta la maneja el hotel en su propia página.</p>
 
-    <p>
-      Si conoces a alguien a quien le gustaría, reenvíale este correo — es la
-      forma en que de verdad se llena una sala.
-    </p>
+    <p>Si conoces a alguien a quien le pueda gustar, reenvíale este correo.</p>
 
-    <p>Gracias por seguirnos.</p>
+    <p>Gracias,<br>Nestor</p>
   `;
 }
