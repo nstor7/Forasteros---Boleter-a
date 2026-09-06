@@ -44,7 +44,7 @@ export const PROXIMO: DatosEvento = {
   // El afiche dice "COVER", no "entrada": en un club el cobro es de entrada y
   // el consumo va aparte. Decirlo como cover evita el reclamo en la puerta.
   precioTexto: "Cover $16.05",
-  incluye: "El consumo va aparte.",
+  incluye: "",
 
   /**
    * Página de cobro del hotel. Es uno de los checkouts que ellos mismos

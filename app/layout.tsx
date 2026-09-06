@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     description: descripcion,
     type: "website",
     locale: "es_PA",
-    images: [{ url: "/fotos/hero-arco.jpg", width: 1200, height: 630 }],
+    images: [{ url: "/fotos/hero-arco.jpg", width: 1200, height: 1800 }],
   },
   twitter: {
     card: "summary_large_image",

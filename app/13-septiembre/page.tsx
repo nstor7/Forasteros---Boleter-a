@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     description: `${PROXIMO.grupo} en vivo. ${dondeYCuando}.`,
     type: "website",
     locale: "es_PA",
-    images: [{ url: "/fotos/hero-arco.jpg", width: 1200, height: 630 }],
+    images: [{ url: "/fotos/puerta-colonial.jpg", width: 1200, height: 1800 }],
   },
 };
 
@@ -40,28 +40,39 @@ export default function TreceDeSeptiembre() {
     <main>
       {/* ---------- Portada ---------- */}
       <section className="relative min-h-[100svh] overflow-hidden">
+        {/* La foto del afiche del hotel. Es vertical y en pantalla ancha se
+            recorta arriba y abajo, así que el porcentaje del object-position
+            es lo que decide si se les ve la cara. */}
         <Image
-          src="/fotos/hero-arco.jpg"
+          src="/fotos/puerta-colonial.jpg"
           alt={`${PROXIMO.grupo} en vivo`}
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[50%_28%]"
+          className="object-cover object-[50%_42%]"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-noche/60 via-noche/45 via-55% to-noche" />
 
-        <div className="relative flex min-h-[100svh] flex-col items-center justify-end px-6 pb-16 text-center sm:pb-24">
-          <p className="mb-4 text-xs tracking-[0.4em] text-oro uppercase sm:text-sm">
-            {PROXIMO.titulo}
-          </p>
+        {/* Título arriba y datos abajo, no todo junto al pie como en la
+            portada: la foto es vertical y el grupo ocupa la mitad de abajo, así
+            que amontonar el texto ahí les tapa la cara. Repartido, el texto cae
+            sobre el portón vacío y la banda se ve. Es también la composición
+            del afiche del hotel. */}
+        <div className="relative flex min-h-[100svh] flex-col items-center justify-between px-6 pt-20 pb-16 text-center sm:pt-28 sm:pb-24">
+          <div>
+            <p className="mb-4 text-xs tracking-[0.4em] text-oro uppercase sm:text-sm">
+              {PROXIMO.titulo}
+            </p>
 
-          <h1 className="font-display text-5xl leading-[1.05] text-hueso sm:text-7xl lg:text-8xl">
-            Los Forasteros
-            <span className="block text-oro-claro">del Tango</span>
-          </h1>
+            <h1 className="font-display text-5xl leading-[1.05] text-hueso sm:text-7xl lg:text-8xl">
+              Los Forasteros
+              <span className="block text-oro-claro">del Tango</span>
+            </h1>
 
-          <div className="filete my-8 w-full max-w-sm" />
+            <div className="filete mx-auto mt-8 w-full max-w-sm" />
+          </div>
 
+          <div className="flex flex-col items-center">
           <div className="space-y-1 text-lg text-hueso sm:text-xl">
             <p className="font-medium">
               {PROXIMO.fechaTexto}
@@ -95,6 +106,7 @@ export default function TreceDeSeptiembre() {
               Entradas a la venta muy pronto
             </p>
           )}
+          </div>
         </div>
       </section>
 
@@ -181,7 +193,7 @@ export default function TreceDeSeptiembre() {
       {/* ---------- Cierre ---------- */}
       <section className="relative overflow-hidden">
         <Image
-          src="/fotos/puerta-colonial.jpg"
+          src="/fotos/hero-arco.jpg"
           alt=""
           aria-hidden
           fill
