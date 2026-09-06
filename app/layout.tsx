@@ -3,7 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 
 import { CapturarUTM } from "@/components/CapturarUTM";
 import MetaPixel from "@/components/MetaPixel";
-import { EVENTO, precio } from "@/lib/event";
+import { PROXIMO } from "@/lib/proximo";
 import "./globals.css";
 
 const inter = Inter({
@@ -18,7 +18,11 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
-const descripcion = `${EVENTO.grupo} en vivo. ${EVENTO.fechaTexto}, ${EVENTO.horaTexto} (puertas ${EVENTO.horaPuertasTexto}), ${EVENTO.lugar}. Boletos ${precio(EVENTO.precioCents)}.`;
+// Descripción del grupo, no de un concierto: es el texto que se ve al
+// compartir la portada, y las fechas concretas ya viven en la página de
+// cada evento, que trae su propia metadata.
+const descripcion =
+  "Quinteto de tango en Panamá. Violín, contrabajo, acordeón, guitarra y voz, con bailarines y cantantes invitados.";
 
 export const metadata: Metadata = {
   // `||` y no `??`: en Vercel la variable puede quedar como cadena vacía (no
@@ -28,14 +32,14 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
   ),
   title: {
-    default: `${EVENTO.grupo} — ${EVENTO.titulo}`,
-    template: `%s · ${EVENTO.grupo}`,
+    default: `${PROXIMO.grupo} — Tango en vivo en Panamá`,
+    template: `%s · ${PROXIMO.grupo}`,
   },
   description: descripcion,
   // La mayoría de la gente va a llegar por un enlace de WhatsApp o Instagram,
   // así que la tarjeta que se ve al compartir importa tanto como la página.
   openGraph: {
-    title: `${EVENTO.grupo} — ${EVENTO.titulo}`,
+    title: `${PROXIMO.grupo} — Tango en vivo en Panamá`,
     description: descripcion,
     type: "website",
     locale: "es_PA",
@@ -43,7 +47,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: `${EVENTO.grupo} — ${EVENTO.titulo}`,
+    title: `${PROXIMO.grupo} — Tango en vivo en Panamá`,
     description: descripcion,
     images: ["/fotos/hero-arco.jpg"],
   },

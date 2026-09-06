@@ -735,6 +735,64 @@ todo.**
 
 ---
 
+### T16 — Concierto del 13 de septiembre en The Club (6 de septiembre)
+
+**Es un evento que no vendemos nosotros.** Los Forasteros tocan el domingo 13
+en **The Club, del American Trade Hotel** (Casco Viejo), a las 6:00 PM, cover
+$16.05. El hotel cobra en su propio checkout de BAC Credomatic. La boletería
+de este proyecto **sigue cerrada** y no se tocó: nada de `ticket_types`, nada
+de PayPal, nada de QR.
+
+**Por qué se armó igual una página nuestra:** sin ella no hay forma de medir
+nada — la compra pasa en el sistema del hotel, donde no vemos nada. Y hay una
+razón de relación: Nestor quiere poder enseñarle al hotel cuánta gente le
+mandamos. Ese número es el objetivo, tanto como los boletos.
+
+**Lo que se construyó:**
+
+| Pieza | Qué hace |
+|---|---|
+| `lib/proximo.ts` | Todos los datos del 13, en un solo archivo. Un campo en `""` no se muestra. |
+| `app/page.tsx` | La portada dejó de ser el concierto del 2 y pasó a ser del **grupo**, con enlace a la fecha viva. |
+| `app/13-septiembre/` | Landing del evento: info, botón al hotel y captura de correo. |
+| `app/ir/hotel/` | Redirección que registra el clic antes de mandar al checkout del hotel. |
+| `app/api/suscribir/` + `app/baja/` | Alta y baja de la lista de correos. |
+| `lib/lista.ts`, `lib/firma-baja.ts` | Lógica de lista, clics y enlace de baja firmado. |
+| `supabase/008_lista_correos.sql` | Tablas `suscriptores` y `clics_salida`. |
+| `scripts/enviar-lista.mts` + `scripts/correos/` | Envío manual de correos a la lista (`npm run lista`). |
+
+**Decisiones que no hay que re-litigar:**
+
+- **El formulario de correo va debajo del botón de compra, nunca antes.**
+  Decisión de Nestor: ya se agrega un salto (reel → nuestra página → hotel), y
+  poner un formulario delante de quien ya decidió comprar cuesta ventas. La
+  captura es la red para quien *no* puede ir.
+- **Nada de secuencia automatizada de correos.** Son dos correos mandados a
+  mano con `npm run lista`. Para decenas de personas, montar automatización es
+  infraestructura para nadie.
+- **El registro del clic nunca bloquea la salida al hotel.** Si la base falla,
+  se pierde la medición y la persona compra igual. Probado.
+- **La baja se confirma con un botón, no al abrir el enlace.** Los filtros de
+  Gmail y Outlook visitan los enlaces solos y darían de baja a quien no lo
+  pidió.
+- **No se puso el aforo (60 asientos) en la página pública**, por la regla de
+  copy de Nestor de no vender el tamaño de la sala. Sí se menciona de pasada
+  en el correo a la lista, donde es un consejo y no un argumento de venta.
+
+**Números de la lista, consultados el 6 de septiembre (no de memoria):** 43
+órdenes pagadas, 74 boletos, **37 correos únicos y 34 con opt-in**. Ojo: la
+página de Notion decía "68 compradores con opt-in" — eso contaba boletos, no
+personas. Los 3 sin opt-in desmarcaron la casilla a propósito (son compras
+normales, no manuales), así que quedan fuera. Las 18 órdenes manuales sí
+entran: nacen con `marketing_opt_in = true` y Nestor les preguntó de viva voz.
+
+**Pendiente y bloqueado:** hay que correr `supabase/008_lista_correos.sql` en
+Supabase. Hasta entonces, `/api/suscribir` responde error y el script de
+correos se detiene diciendo exactamente eso. La redirección `/ir/hotel` sí
+funciona ya (solo pierde el registro del clic).
+
+---
+
 ## 7. Cómo verificar tu trabajo
 
 ```bash

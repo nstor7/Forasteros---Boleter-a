@@ -1,5 +1,44 @@
 # Tus tareas, Nestor
 
+## 🔴 Para el concierto del 13 de septiembre (hoy es 6 de septiembre)
+
+### [ ] A. Correr la migración 008 en Supabase *(2 minutos)* — **tapón de todo**
+
+Sin esto no se guarda ningún correo ni se cuenta ningún clic.
+
+```bash
+cat "supabase/008_lista_correos.sql" | pbcopy
+```
+
+Pega en supabase.com → tu proyecto → **SQL Editor** → **New query** → **Run**.
+
+Cómo sabes que funcionó: `select count(*) from suscriptores;` devuelve 0 sin
+error.
+
+### [ ] B. Revisar la página y publicarla
+
+`npm run dev` y abre `/` y `/13-septiembre`. Cuando te guste, se hace commit y
+push (Vercel publica solo).
+
+### [ ] C. Mandar el primer correo a los 34
+
+```bash
+npm run lista -- anuncio --prueba TU@CORREO
+```
+
+Léelo en tu bandeja. Si está bien: `npm run lista -- anuncio --enviar`.
+El viernes o sábado, lo mismo con `recordatorio`.
+
+### [ ] D. Preguntarle al hotel si te dan un enlace o código propio
+
+Aunque contemos los clics de salida, la compra pasa en su sistema y no la
+vemos. Con un enlace propio se cierra el círculo.
+
+---
+
+# Tareas viejas — concierto del 2 de septiembre (cerradas)
+
+
 Lo que solo puedes hacer tú, porque requiere tus credenciales o tu decisión.
 Ordenadas por urgencia. **Quedan 12 días** (hoy 21 de agosto, concierto el 2 de
 septiembre).

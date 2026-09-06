@@ -1,8 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { EVENTO, precio } from "@/lib/event";
+import FormularioLista from "@/components/FormularioLista";
+import { PROXIMO, ventaAbierta } from "@/lib/proximo";
 
+/**
+ * Portada del grupo — ya no de un concierto.
+ *
+ * Hasta el 3 de septiembre esta página anunciaba el concierto del 2 en Rock
+ * and Folk, con un botón de compra que llevaba a "la venta ya cerró". El
+ * enlace de la bio de Instagram apunta aquí y fue el canal que más boletos
+ * vendió, así que la portada tiene que hablar del grupo y mandar a la fecha
+ * que esté viva; cada concierto vive en su propia página.
+ */
 export default function Home() {
   return (
     <main>
@@ -10,18 +20,17 @@ export default function Home() {
       <section className="relative min-h-[100svh] overflow-hidden">
         <Image
           src="/fotos/hero-arco.jpg"
-          alt={`${EVENTO.grupo}, banda de tango en vivo`}
+          alt={`${PROXIMO.grupo}, quinteto de tango en Panamá`}
           fill
           priority
           sizes="100vw"
           className="object-cover object-[50%_28%]"
         />
-        {/* El degradado hace legible el texto sin apagar la luz dorada de la foto */}
         <div className="absolute inset-0 bg-gradient-to-b from-noche/60 via-noche/45 via-55% to-noche" />
 
         <div className="relative flex min-h-[100svh] flex-col items-center justify-end px-6 pb-16 text-center sm:pb-24">
           <p className="mb-4 text-xs tracking-[0.4em] text-oro uppercase sm:text-sm">
-            {EVENTO.titulo}
+            Quinteto de tango · Panamá
           </p>
 
           <h1 className="font-display text-5xl leading-[1.05] text-hueso sm:text-7xl lg:text-8xl">
@@ -31,21 +40,16 @@ export default function Home() {
 
           <div className="filete my-8 w-full max-w-sm" />
 
-          <div className="space-y-1 text-lg text-hueso sm:text-xl">
-            <p className="font-medium">
-              {EVENTO.fechaTexto} · {EVENTO.horaTexto}
-            </p>
-            <p className="text-hueso-tenue">{EVENTO.lugar}</p>
-            <p className="text-xs text-hueso-tenue/70">
-              Puertas abren {EVENTO.horaPuertasTexto}
-            </p>
-          </div>
+          <p className="max-w-md text-lg text-hueso-tenue sm:text-xl">
+            Violín, contrabajo, acordeón, piano y voz. Tango en vivo, con
+            bailarines y cantantes invitados.
+          </p>
 
           <Link
-            href="/boletos"
+            href="/13-septiembre"
             className="mt-10 inline-block rounded-full bg-oro px-10 py-4 text-base font-semibold text-noche transition hover:bg-oro-claro focus-visible:ring-2 focus-visible:ring-oro-claro focus-visible:ring-offset-2 focus-visible:ring-offset-noche focus-visible:outline-none"
           >
-            Comprar boletos · {precio(EVENTO.precioCents)}
+            Próximo concierto · {PROXIMO.fechaTexto}
           </Link>
         </div>
       </section>
@@ -56,7 +60,7 @@ export default function Home() {
           <div className="relative aspect-[3/4] overflow-hidden rounded-sm">
             <Image
               src="/fotos/grupo-parque.jpg"
-              alt={EVENTO.grupo}
+              alt={PROXIMO.grupo}
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover"
@@ -73,11 +77,11 @@ export default function Home() {
             <div className="filete my-7 max-w-xs" />
             <div className="space-y-4 text-lg leading-relaxed text-hueso-tenue">
               <p>
-                Violín, contrabajo, acordeón, guitarra y voz para una noche de
-                tango en el corazón de la ciudad.
+                Tres años tocando tango en Panamá: los que todo el mundo
+                reconoce y los que valdría la pena conocer.
               </p>
               <p>
-                La noche suma bailarines en escena y un cantante invitado —
+                En escena, el quinteto suma bailarines y un cantante invitado —
                 un show completo, no solo un concierto sentado.
               </p>
             </div>
@@ -85,35 +89,28 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ---------- Datos prácticos ---------- */}
+      {/* ---------- Próximas fechas ---------- */}
       <section className="border-y border-piedra bg-noche-suave">
-        <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 sm:grid-cols-3 sm:py-20">
-          <Dato titulo="Cuándo">
-            <p className="text-hueso">{EVENTO.fechaTexto}</p>
-            <p className="text-hueso-tenue">{EVENTO.horaTexto}</p>
-            <p className="text-xs text-hueso-tenue/70">
-              Puertas abren {EVENTO.horaPuertasTexto}
-            </p>
-          </Dato>
+        <div className="mx-auto max-w-6xl px-6 py-16 sm:py-20">
+          <p className="mb-8 text-xs tracking-[0.3em] text-oro uppercase">
+            Próximas fechas
+          </p>
 
-          <Dato titulo="Dónde">
-            <p className="text-hueso">{EVENTO.lugar}</p>
-            <a
-              href={EVENTO.mapaUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-hueso-tenue underline decoration-oro/40 underline-offset-4 transition hover:text-oro"
-            >
-              {EVENTO.direccion}
-            </a>
-          </Dato>
-
-          <Dato titulo="Entrada">
-            <p className="text-hueso">
-              {precio(EVENTO.precioCents)} por persona
-            </p>
-            <p className="text-hueso-tenue">Tarjeta o Yappy</p>
-          </Dato>
+          <Link
+            href="/13-septiembre"
+            className="group flex flex-col gap-2 border-t border-piedra py-6 transition sm:flex-row sm:items-baseline sm:gap-8"
+          >
+            <span className="font-display text-2xl text-hueso transition group-hover:text-oro sm:w-72">
+              {PROXIMO.fechaTexto}
+            </span>
+            <span className="flex-1 text-hueso-tenue">
+              {[PROXIMO.horaTexto, PROXIMO.lugar].filter(Boolean).join(" · ") ||
+                "Detalles muy pronto"}
+            </span>
+            <span className="text-sm text-oro">
+              {ventaAbierta() ? "Entradas →" : "Ver detalles →"}
+            </span>
+          </Link>
         </div>
       </section>
 
@@ -131,27 +128,21 @@ export default function Home() {
 
         <div className="relative mx-auto max-w-2xl px-6 py-24 text-center sm:py-32">
           <h2 className="font-display text-4xl text-hueso sm:text-5xl">
-            Te esperamos
+            Entérate de los próximos
           </h2>
           <p className="mt-5 text-lg text-hueso-tenue">
-            Tu boleto llega con un código QR que presentas en la puerta. Nada de
-            imprimir: basta con mostrarlo desde el celular.
+            Anunciamos las fechas por correo antes que en ningún otro lado.
           </p>
 
-          <Link
-            href="/boletos"
-            className="mt-10 inline-block rounded-full bg-oro px-10 py-4 text-base font-semibold text-noche transition hover:bg-oro-claro focus-visible:ring-2 focus-visible:ring-oro-claro focus-visible:ring-offset-2 focus-visible:ring-offset-noche focus-visible:outline-none"
-          >
-            Comprar boletos
-          </Link>
+          <div className="mt-10 text-left">
+            <FormularioLista origen="portada" />
+          </div>
         </div>
       </section>
 
       <footer className="border-t border-piedra px-6 py-10 text-center text-sm text-hueso-tenue">
-        <p className="font-display text-base text-oro">{EVENTO.grupo}</p>
-        <p className="mt-2">
-          {EVENTO.fechaTexto} · {EVENTO.lugar} · Panamá
-        </p>
+        <p className="font-display text-base text-oro">{PROXIMO.grupo}</p>
+        <p className="mt-2">Panamá</p>
         <Link
           href="/terminos"
           className="mt-4 inline-block underline underline-offset-4 transition hover:text-oro"
@@ -160,22 +151,5 @@ export default function Home() {
         </Link>
       </footer>
     </main>
-  );
-}
-
-function Dato({
-  titulo,
-  children,
-}: {
-  titulo: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <p className="mb-3 text-xs tracking-[0.3em] text-oro uppercase">
-        {titulo}
-      </p>
-      <div className="space-y-1 text-lg">{children}</div>
-    </div>
   );
 }
