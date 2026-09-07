@@ -12,7 +12,9 @@ import { PROXIMO } from "../../lib/proximo.ts";
  * el agradecimiento es por haber apoyado, que vale para los dos casos.
  */
 
-export const asunto = "Volvemos a tocar este domingo";
+// Nombra el 13 en vez de decir "este domingo": el correo puede salir un
+// domingo, y ahí "este domingo" se lee como hoy.
+export const asunto = "Volvemos a tocar el domingo 13";
 
 export function cuerpo(nombre: string, enlaceCompra: string): string {
   const cuando = [PROXIMO.fechaTexto, PROXIMO.horaTexto].filter(Boolean).join(" · ");
@@ -23,7 +25,7 @@ export function cuerpo(nombre: string, enlaceCompra: string): string {
     <p>Gracias por habernos apoyado con el concierto del 2 de septiembre.</p>
 
     <p>
-      Este <strong>domingo 13</strong> volvemos a tocar${PROXIMO.lugar ? `, esta vez en <strong>The Club</strong>, del American Trade Hotel` : ""}.
+      El <strong>domingo 13</strong> volvemos a tocar${PROXIMO.lugar ? `, esta vez en <strong>The Club</strong>, del American Trade Hotel` : ""}.
       El programa se llama <em>${PROXIMO.titulo}</em>.
     </p>
 
