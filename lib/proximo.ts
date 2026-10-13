@@ -47,23 +47,31 @@ export const PROXIMO: DatosEvento = {
     "https://www.google.com/maps/search/?api=1&query=American+Trade+Hotel%2C+Plaza+Herrera%2C+Panam%C3%A1",
 
   /**
-   * Pendiente de confirmar con el hotel. Mientras esté vacío, la página no
-   * inventa un precio: no muestra la línea de entrada y el botón dice
-   * "entradas pronto".
+   * El afiche del hotel dice "COVER", no "entrada": en un club el cobro es de
+   * entrada y el consumo va aparte. Decirlo como cover evita el reclamo en la
+   * puerta.
+   *
+   * $16.05 es el precio que cobra el checkout del hotel, no un cálculo
+   * nuestro: son $15 más el 7% de ITBMS.
    */
-  precioTexto: "",
+  precioTexto: "Cover $16.05",
   incluye: "",
 
   /**
    * Página de cobro del hotel para ESTA fecha.
    *
-   * Está vacía a propósito. El enlace que había aquí era el del concierto del
-   * 13 de septiembre; reusarlo mandaría a la gente a pagar por una fecha que
-   * ya pasó. Hasta que llegue el enlace nuevo, `ventaAbierta()` devuelve false
-   * y eso bloquea dos cosas a la vez: el botón de compra en la página y el
-   * envío de los correos a la lista.
+   * Verificado contra el propio checkout antes de ponerlo aquí: el comercio es
+   * "AMERICAN TRADE HOTEL CC", el monto son USD 16.05 y no está expirado. Vale
+   * la pena repetir esa comprobación cada vez que cambie la fecha — el hotel
+   * publica un botón distinto por concierto y todos se ven iguales desde
+   * afuera.
+   *
+   * Ojo: el checkout nombra el show "DE GARDEL A PIAZZOLLA", que no es el
+   * título que usamos aquí. Si el hotel no lo corrige, quien haga clic ve un
+   * nombre distinto al de la página.
    */
-  urlCobro: "",
+  urlCobro:
+    "https://checkout.baccredomatic.com/NGE0OTNjMTU2MmM2Nzc4NWI5MDYwMS4xNzkwNzExMTA5",
 
   /** Quién toca esa noche. Confirmar si cambia respecto a septiembre. */
   formacion:
