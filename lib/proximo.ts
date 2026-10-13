@@ -1,10 +1,9 @@
 /**
- * Datos del concierto del 13 de septiembre en The Club.
+ * Datos del concierto del 18 de octubre en The Club.
  *
  * Es un evento distinto a los de `lib/event.ts`: aquí **no vendemos nosotros**
- * — el hotel cobra en su propia página (checkout de BAC Credomatic). Nuestro
- * sitio solo informa, manda el clic medido hacia allá (`/ir/hotel`) y recoge
- * el correo de quien no puede ir.
+ * — el hotel cobra en su propia página. Nuestro sitio solo informa, manda el
+ * clic medido hacia allá (`/ir/hotel`) y recoge el correo de quien no puede ir.
  *
  * Igual que `lib/event.ts`: cambiar un dato es tocar este archivo y nada más.
  * Un campo vacío ("") significa "no lo sabemos" y la página no lo muestra.
@@ -30,32 +29,43 @@ type DatosEvento = {
 // comparar.
 export const PROXIMO: DatosEvento = {
   grupo: "Los Forasteros del Tango",
-  titulo: "Un viaje a Buenos Aires", // como lo nombra el afiche del hotel
+  titulo: "Aires de Tradición y Vanguardia",
 
-  fechaTexto: "Domingo 13 de septiembre",
-  horaTexto: "6:00 PM",
-  horaPuertasTexto: "",
+  fechaTexto: "Domingo 18 de octubre",
+
+  /**
+   * Las puertas abren una hora antes de la música. En septiembre el afiche
+   * daba una sola hora y la gente llegaba justo a esa; decir las dos por
+   * separado evita que entren cuando ya empezó el primer tango.
+   */
+  horaTexto: "7:00 PM",
+  horaPuertasTexto: "6:00 PM",
 
   lugar: "The Club — American Trade Hotel",
   direccion: "Boulevard 1, Plaza Herrera, Casco Viejo",
   mapaUrl:
     "https://www.google.com/maps/search/?api=1&query=American+Trade+Hotel%2C+Plaza+Herrera%2C+Panam%C3%A1",
 
-  // El afiche dice "COVER", no "entrada": en un club el cobro es de entrada y
-  // el consumo va aparte. Decirlo como cover evita el reclamo en la puerta.
-  precioTexto: "Cover $16.05",
+  /**
+   * Pendiente de confirmar con el hotel. Mientras esté vacío, la página no
+   * inventa un precio: no muestra la línea de entrada y el botón dice
+   * "entradas pronto".
+   */
+  precioTexto: "",
   incluye: "",
 
   /**
-   * Página de cobro del hotel. Es uno de los checkouts que ellos mismos
-   * publican en americantradehotel.com/the-club, confirmado contra esa página.
-   * Mientras esté vacía, nuestra página muestra "entradas pronto" en vez de un
-   * botón que no lleva a nada.
+   * Página de cobro del hotel para ESTA fecha.
+   *
+   * Está vacía a propósito. El enlace que había aquí era el del concierto del
+   * 13 de septiembre; reusarlo mandaría a la gente a pagar por una fecha que
+   * ya pasó. Hasta que llegue el enlace nuevo, `ventaAbierta()` devuelve false
+   * y eso bloquea dos cosas a la vez: el botón de compra en la página y el
+   * envío de los correos a la lista.
    */
-  urlCobro:
-    "https://checkout.baccredomatic.com/ODY2MTM2YTE0NjI5YTAwYWU0NWYuM2ExNzg4MjA5ODI4",
+  urlCobro: "",
 
-  /** Quién toca esa noche. El afiche manda: aquí no hay guitarra ni bailarines. */
+  /** Quién toca esa noche. Confirmar si cambia respecto a septiembre. */
   formacion:
     "Samuel Barrios (piano), Carlos Quirós (contrabajo), Nestor Ibarra (violín), Arlene Magallón (acordeón), y las voces de José David Ordóñez y Alejandra Ordóñez.",
 };
@@ -63,4 +73,14 @@ export const PROXIMO: DatosEvento = {
 /** Si ya se puede mandar gente a comprar. */
 export function ventaAbierta(): boolean {
   return PROXIMO.urlCobro !== "";
+}
+
+/**
+ * `fechaTexto` arranca con el día de la semana en mayúscula porque casi
+ * siempre se muestra suelto, como un título. Metido en una frase —"tocamos el
+ * Domingo 18"— esa mayúscula se lee como un error de tipeo, así que aquí baja.
+ */
+export function fechaEnFrase(): string {
+  const t = PROXIMO.fechaTexto;
+  return t ? t[0].toLowerCase() + t.slice(1) : "";
 }

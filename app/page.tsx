@@ -46,7 +46,7 @@ export default function Home() {
           </p>
 
           <Link
-            href="/13-septiembre"
+            href="/18-octubre"
             className="mt-10 inline-block rounded-full bg-oro px-10 py-4 text-base font-semibold text-noche transition hover:bg-oro-claro focus-visible:ring-2 focus-visible:ring-oro-claro focus-visible:ring-offset-2 focus-visible:ring-offset-noche focus-visible:outline-none"
           >
             Próximo concierto · {PROXIMO.fechaTexto}
@@ -97,7 +97,7 @@ export default function Home() {
           </p>
 
           <Link
-            href="/13-septiembre"
+            href="/18-octubre"
             className="group flex flex-col gap-2 border-t border-piedra py-6 transition sm:flex-row sm:items-baseline sm:gap-8"
           >
             <span className="font-display text-2xl text-hueso transition group-hover:text-oro sm:w-72">

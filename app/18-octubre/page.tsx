@@ -7,7 +7,7 @@ import FormularioLista from "@/components/FormularioLista";
 import { PROXIMO, ventaAbierta } from "@/lib/proximo";
 
 /**
- * Página del concierto del 13 de septiembre en el hotel.
+ * Página del concierto del 18 de octubre en el hotel.
  *
  * Aquí no se vende: el hotel cobra en su sistema. Esta página existe para
  * tres cosas, en este orden — informar, mandar el clic medido hacia el hotel
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function TreceDeSeptiembre() {
+export default function DieciochoDeOctubre() {
   const abierta = ventaAbierta();
 
   return (
@@ -228,7 +228,7 @@ export default function TreceDeSeptiembre() {
               Déjanos tu correo y te avisamos del próximo concierto antes que a
               nadie.
             </p>
-            <FormularioLista origen="13-septiembre" />
+            <FormularioLista origen="18-octubre" />
           </div>
         </div>
       </section>

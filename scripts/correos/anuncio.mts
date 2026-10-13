@@ -1,4 +1,4 @@
-import { PROXIMO } from "../../lib/proximo.ts";
+import { fechaEnFrase, PROXIMO } from "../../lib/proximo.ts";
 
 /**
  * Correo 1 — el anuncio, para mandar en cuanto la página esté arriba.
@@ -7,30 +7,40 @@ import { PROXIMO } from "../../lib/proximo.ts";
  * publicitario, sin signos de exclamación, y el tango como gancho y no como
  * filtro. Es un correo de una persona, y por eso lo firma Nestor.
  *
- * **No da por hecho que la persona fue al concierto del 2.** De los 74 boletos
- * solo se escanearon 45 en la puerta, así que hay compradores que no llegaron:
- * el agradecimiento es por haber apoyado, que vale para los dos casos.
+ * **No da por hecho a cuál concierto fue la persona, ni que fue a alguno.**
+ * En esta lista hay compradores del 2 de septiembre que no llegaron a entrar
+ * (de 74 boletos se escanearon 45), gente que vio el del 13 en el hotel, y
+ * suscriptores que todavía no nos han visto tocar. Un agradecimiento genérico
+ * es el único que no le queda falso a nadie.
+ *
+ * Volvemos al mismo salón que en septiembre, así que el texto dice "volvemos
+ * a The Club" y no "esta vez en The Club" — esa frase era para cuando el
+ * lugar era la novedad.
  */
 
-// Nombra el 13 en vez de decir "este domingo": el correo puede salir un
-// domingo, y ahí "este domingo" se lee como hoy.
-export const asunto = "Volvemos a tocar el domingo 13";
+// Nombra la fecha con mes. El correo sale en octubre y puede caer un domingo:
+// ahí "este domingo" se lee como hoy.
+export const asunto = "Volvemos a tocar el domingo 18 de octubre";
 
 export function cuerpo(nombre: string, enlaceCompra: string): string {
-  const cuando = [PROXIMO.fechaTexto, PROXIMO.horaTexto].filter(Boolean).join(" · ");
-
   return `
     <p>Hola ${nombre},</p>
 
-    <p>Gracias por habernos apoyado con el concierto del 2 de septiembre.</p>
+    <p>Gracias por seguirle la pista a lo que hacemos.</p>
 
     <p>
-      El <strong>domingo 13</strong> volvemos a tocar${PROXIMO.lugar ? `, esta vez en <strong>The Club</strong>, del American Trade Hotel` : ""}.
-      El programa se llama <em>${PROXIMO.titulo}</em>.
+      El <strong>${fechaEnFrase()}</strong> volvemos a ${PROXIMO.lugar ? "<strong>The Club</strong>, del American Trade Hotel" : "tocar"}.
+      El programa nuevo se llama <em>${PROXIMO.titulo}</em>: los tangos de
+      siempre junto a otros que empujan el género hacia adelante.
     </p>
 
     <p>
-      <strong>${cuando}</strong>${PROXIMO.lugar ? `<br>${PROXIMO.lugar}` : ""}${PROXIMO.direccion ? `<br>${PROXIMO.direccion}` : ""}${PROXIMO.precioTexto ? `<br>${PROXIMO.precioTexto}` : ""}
+      <strong>${PROXIMO.fechaTexto}</strong>${PROXIMO.horaPuertasTexto ? `<br>Puertas ${PROXIMO.horaPuertasTexto}` : ""}${PROXIMO.horaTexto ? ` · música ${PROXIMO.horaTexto}` : ""}${PROXIMO.lugar ? `<br>${PROXIMO.lugar}` : ""}${PROXIMO.direccion ? `<br>${PROXIMO.direccion}` : ""}${PROXIMO.precioTexto ? `<br>${PROXIMO.precioTexto}` : ""}
+    </p>
+
+    <p>
+      Entre que abren las puertas y el primer tango hay una hora, así que da
+      tiempo de llegar con calma y tomar algo.
     </p>
 
     <p style="margin:28px 0">
