@@ -30,8 +30,9 @@ export function cuerpo(nombre: string, enlaceCompra: string): string {
 
     <p>
       El <strong>${fechaEnFrase()}</strong> volvemos a ${PROXIMO.lugar ? "<strong>The Club</strong>, del American Trade Hotel" : "tocar"}.
-      El programa nuevo se llama <em>${PROXIMO.titulo}</em>: los tangos de
-      siempre junto a otros que empujan el género hacia adelante.
+      El programa se llama <em>${PROXIMO.titulo}</em>${PROXIMO.subtitulo ? `, <em>${PROXIMO.subtitulo}</em>` : ""}:
+      de los tangos que Gardel hizo famosos a lo que Piazzolla hizo con el
+      género después.
     </p>
 
     <p>

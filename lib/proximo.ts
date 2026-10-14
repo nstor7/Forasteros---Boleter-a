@@ -12,6 +12,7 @@
 type DatosEvento = {
   grupo: string;
   titulo: string;
+  subtitulo: string;
   fechaTexto: string;
   horaTexto: string;
   horaPuertasTexto: string;
@@ -29,7 +30,15 @@ type DatosEvento = {
 // comparar.
 export const PROXIMO: DatosEvento = {
   grupo: "Los Forasteros del Tango",
-  titulo: "Aires de Tradición y Vanguardia",
+
+  /**
+   * Título y subtítulo son dos campos porque el hotel los pide por separado y
+   * los imprime así en el afiche. El título es el que va en el botón de cobro,
+   * y por eso tiene que coincidir con lo que dice el checkout: alguien que ve
+   * un nombre en la página y otro al pagar cree que se equivocó de enlace.
+   */
+  titulo: "De Gardel a Piazzolla",
+  subtitulo: "Aires de Tradición y Vanguardia",
 
   fechaTexto: "Domingo 18 de octubre",
 
@@ -66,16 +75,20 @@ export const PROXIMO: DatosEvento = {
    * publica un botón distinto por concierto y todos se ven iguales desde
    * afuera.
    *
-   * Ojo: el checkout nombra el show "DE GARDEL A PIAZZOLLA", que no es el
-   * título que usamos aquí. Si el hotel no lo corrige, quien haga clic ve un
-   * nombre distinto al de la página.
+   * El checkout nombra el show "LOS FORASTEROS DEL TANGO - DE GARDEL A
+   * PIAZZOLLA", que es el mismo título de arriba. Si alguna vez dejan de
+   * coincidir, el de la página es el que está mal.
    */
   urlCobro:
     "https://checkout.baccredomatic.com/NGE0OTNjMTU2MmM2Nzc4NWI5MDYwMS4xNzkwNzExMTA5",
 
-  /** Quién toca esa noche. Confirmar si cambia respecto a septiembre. */
+  /**
+   * Quién toca esa noche. Cambia por concierto: para esta fecha el piano lo
+   * hace Emilio Martini en lugar de Samuel Barrios, y las voces son Alejandra
+   * Ordóñez y Rosana Amarillo.
+   */
   formacion:
-    "Samuel Barrios (piano), Carlos Quirós (contrabajo), Nestor Ibarra (violín), Arlene Magallón (acordeón), y las voces de José David Ordóñez y Alejandra Ordóñez.",
+    "Emilio Martini (piano), Carlos Quirós (contrabajo), Nestor Ibarra (violín), Arlene Magallón (acordeón), y las voces de Alejandra Ordóñez y Rosana Amarillo.",
 };
 
 /** Si ya se puede mandar gente a comprar. */

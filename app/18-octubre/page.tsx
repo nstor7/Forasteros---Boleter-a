@@ -21,12 +21,17 @@ const dondeYCuando = [PROXIMO.fechaTexto, PROXIMO.horaTexto, PROXIMO.lugar]
   .filter(Boolean)
   .join(", ");
 
+// El programa tiene nombre propio, así que entra en la tarjeta que se ve al
+// compartir: "De Gardel a Piazzolla" dice de qué va la noche, y una fecha
+// suelta no.
+const queEs = [PROXIMO.titulo, PROXIMO.subtitulo].filter(Boolean).join(" · ");
+
 export const metadata: Metadata = {
-  title: `${PROXIMO.fechaTexto}`,
-  description: `${PROXIMO.grupo} en vivo. ${dondeYCuando}.`,
+  title: `${PROXIMO.titulo} — ${PROXIMO.fechaTexto}`,
+  description: `${queEs}. ${PROXIMO.grupo} en vivo. ${dondeYCuando}.`,
   openGraph: {
-    title: `${PROXIMO.grupo} — ${PROXIMO.fechaTexto}`,
-    description: `${PROXIMO.grupo} en vivo. ${dondeYCuando}.`,
+    title: `${PROXIMO.grupo} — ${PROXIMO.titulo}`,
+    description: `${queEs}. ${dondeYCuando}.`,
     type: "website",
     locale: "es_PA",
     images: [{ url: "/fotos/puerta-colonial.jpg", width: 1200, height: 1800 }],
@@ -130,6 +135,14 @@ export default function DieciochoDeOctubre() {
             <h2 className="font-display text-4xl text-hueso sm:text-5xl">
               {PROXIMO.titulo}
             </h2>
+            {/* El subtítulo vive aquí y no en la portada a propósito: arriba
+                compite con el nombre del grupo, que es lo que tiene que leerse
+                primero. Aquí, pegado al título, es donde explica el programa. */}
+            {PROXIMO.subtitulo && (
+              <p className="mt-3 text-lg text-oro-claro italic sm:text-xl">
+                {PROXIMO.subtitulo}
+              </p>
+            )}
             <div className="filete my-7 max-w-xs" />
             <div className="space-y-4 text-lg leading-relaxed text-hueso-tenue">
               <p>
